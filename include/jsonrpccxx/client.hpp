@@ -1,7 +1,6 @@
 #pragma once
 #include "common.hpp"
 #include "iclientconnector.hpp"
-#include <exception>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <variant>
