@@ -23,7 +23,7 @@ add_library(json-rpc-cxx INTERFACE)
 target_include_directories(json-rpc-cxx INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(json-rpc-cxx INTERFACE cxx_std_17)
 target_link_libraries(json-rpc-cxx INTERFACE nlohmann_json::nlohmann_json)
-set_target_properties(json-rpc-cxx PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/jsonrpccxx/batchclient.hpp;${CMAKE_SOURCE_DIR}/include/jsonrpccxx/client.hpp;${CMAKE_SOURCE_DIR}/include/jsonrpccxx/common.hpp;${CMAKE_SOURCE_DIR}/include/jsonrpccxx/dispatcher.hpp;${CMAKE_SOURCE_DIR}/include/jsonrpccxx/iclientconnector.hpp;${CMAKE_SOURCE_DIR}/include/jsonrpccxx/server.hpp;${CMAKE_SOURCE_DIR}/include/jsonrpccxx/typemapper.hpp")
+set_target_properties(json-rpc-cxx PROPERTIES PUBLIC_HEADER "${PROJECT_SOURCE_DIR}/include/jsonrpccxx/batchclient.hpp;${PROJECT_SOURCE_DIR}/include/jsonrpccxx/client.hpp;${PROJECT_SOURCE_DIR}/include/jsonrpccxx/common.hpp;${PROJECT_SOURCE_DIR}/include/jsonrpccxx/dispatcher.hpp;${PROJECT_SOURCE_DIR}/include/jsonrpccxx/iclientconnector.hpp;${PROJECT_SOURCE_DIR}/include/jsonrpccxx/server.hpp;${PROJECT_SOURCE_DIR}/include/jsonrpccxx/typemapper.hpp")
 add_library(json-rpc-cxx::json-rpc-cxx ALIAS json-rpc-cxx)
 
 install(TARGETS json-rpc-cxx nlohmann_json
