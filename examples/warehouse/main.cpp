@@ -22,7 +22,7 @@ private:
 };
 
 void doWarehouseStuff(IClientConnector &clientConnector) {
-  JsonRpcClient client(clientConnector, version::v2);
+  JsonRpcClient client(clientConnector);
   WareHouseClient appClient(client);
   Product p;
   p.id = "0xff";

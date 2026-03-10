@@ -7,7 +7,7 @@
 using namespace jsonrpccxx;
 
 struct IntegrationTest {
-  IntegrationTest() : rpcServer(), connector(rpcServer), client(connector, version::v2) {}
+  IntegrationTest() : rpcServer(), connector(rpcServer), client(connector) {}
   JsonRpc2Server rpcServer;
   InMemoryConnector connector;
   JsonRpcClient client;

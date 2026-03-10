@@ -42,17 +42,17 @@ TEST_CASE("batchrequest") {
   CHECK(request.is_array());
   CHECK(request.size() == 6);
   c.Send(request[0].dump());
-  c.VerifyMethodRequest(version::v2, "some_method1", 1);
+  c.VerifyMethodRequest("some_method1", 1);
   c.Send(request[1].dump());
-  c.VerifyMethodRequest(version::v2, "some_method1", "1");
+  c.VerifyMethodRequest("some_method1", "1");
   c.Send(request[2].dump());
-  c.VerifyMethodRequest(version::v2, "some_method2", 2);
+  c.VerifyMethodRequest("some_method2", 2);
   c.Send(request[3].dump());
-  c.VerifyMethodRequest(version::v2, "some_method2", "2");
+  c.VerifyMethodRequest("some_method2", "2");
   c.Send(request[4].dump());
-  c.VerifyNotificationRequest(version::v2, "some_notification1");
+  c.VerifyNotificationRequest("some_notification1");
   c.Send(request[5].dump());
-  c.VerifyNotificationRequest(version::v2, "some_notification2");
+  c.VerifyNotificationRequest("some_notification2");
 }
 
 TEST_CASE("batchclient") {

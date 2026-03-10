@@ -44,26 +44,15 @@ public:
     raw_response = response.dump();
   }
 
-  void VerifyMethodRequest(version version, const string &name, json id) {
+  void VerifyMethodRequest(const string &name, json id) {
     CHECK(request["method"] == name);
     CHECK(request["id"] == id);
-    if (version == version::v2) {
-      CHECK(request["jsonrpc"] == "2.0");
-    } else {
-      CHECK(!has_key(request, "jsonrpc"));
-      CHECK(has_key(request, "params"));
-    }
+    CHECK(request["jsonrpc"] == "2.0");
   }
 
-  void VerifyNotificationRequest(version version, const string &name) {
+  void VerifyNotificationRequest(const string &name) {
     CHECK(request["method"] == name);
-    if (version == version::v2) {
-      CHECK(request["jsonrpc"] == "2.0");
-      CHECK(!has_key(request, "id"));
-    } else {
-      CHECK(!has_key(request, "jsonrpc"));
-      CHECK(request["id"].is_null());
-      CHECK(has_key(request, "params"));
-    }
+    CHECK(request["jsonrpc"] == "2.0");
+    CHECK(!has_key(request, "id"));
   }
 };
