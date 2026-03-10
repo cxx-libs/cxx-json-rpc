@@ -1,6 +1,6 @@
 #pragma once
 
-#include "client.hpp"
+#include "jsonrpccxx/client.hpp"
 
 namespace jsonrpccxx {
   class BatchRequest {

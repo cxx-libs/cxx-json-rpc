@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.hpp"
-#include "dispatcher.hpp"
+#include "jsonrpccxx/common.hpp"
+#include "jsonrpccxx/dispatcher.hpp"
 #include <string>
 
 namespace jsonrpccxx {
