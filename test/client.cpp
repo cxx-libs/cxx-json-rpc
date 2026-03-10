@@ -16,7 +16,7 @@ TEST_CASE_FIXTURE(F, "method_noparams") {
   c.SetResult(true);
   client.CallMethod<json>("000-000-000", "some.method_1");
   c.VerifyMethodRequest("some.method_1", "000-000-000");
-  CHECK(!has_key(c.request, "params"));
+  CHECK(!c.request.contains("params"));
 }
 
 TEST_CASE_FIXTURE(F, "method_call_params_empty") {
@@ -117,12 +117,12 @@ TEST_CASE_FIXTURE(F, "notification_call_no_params") {
   c.raw_response = "";
   client.CallNotification("some.notification_1", {});
   c.VerifyNotificationRequest("some.notification_1");
-  CHECK(!has_key(c.request, "params"));
+  CHECK(!c.request.contains("params"));
 
   c.raw_response = "";
   client.CallNotification("some.notification_1");
   c.VerifyNotificationRequest("some.notification_1");
-  CHECK(!has_key(c.request, "params"));
+  CHECK(!c.request.contains("params"));
 }
 
 TEST_CASE_FIXTURE(F, "notification_call_params_byname") {
