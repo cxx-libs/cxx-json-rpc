@@ -87,48 +87,6 @@ private:
   std::unordered_map<std::string, NotificationHandle> notifications;
   std::unordered_map<std::string, NamedParamMapping> mapping;
 
- /* inline json normalize_parameter(std::string_view name, const json &params) const
-  {
-    if(params.is_array()) return params; // already positional
-
-    if (params.is_object()) {
-        // single lookup in mapping
-        auto it = mapping.find(std::string(name)); // mapping still uses std::string keys
-        if (it == mapping.end()) {
-            throw JsonRpcException(
-                invalid_params,
-                "invalid parameter: procedure doesn't support named parameters"
-            );
-        }
-
-        const auto &expected_keys = it->second;
-        json result = json::array();
-        result.reserve(expected_keys.size());
-
-        for (const auto &key : expected_keys) {
-            // use find + iterator to avoid duplicate lookups
-            auto param_it = params.find(key);
-            if (param_it == params.end()) {
-                throw JsonRpcException(
-                    invalid_params,
-                    "invalid parameter: missing named parameter \"" + key + "\""
-                );
-            }
-
-            // emplace the value (avoids unnecessary copy)
-            result.push_back(param_it.value());
-        }
-
-        return result;
-    }
-
-    throw JsonRpcException(
-        invalid_request,
-        R"(invalid request: the "params" field must be either an array or an object.)"
-    );
-}*/
-
-
   inline json normalize_parameter(const std::string &name, const json &params) const
   {
     if(params.is_array()) return params;
