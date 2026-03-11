@@ -1,25 +1,23 @@
 #include "doctest/doctest.h"
 #include "testserverconnector.hpp"
-#include <iostream>
 #include <jsonrpccxx/server.hpp>
-
+#include <string>
 using namespace jsonrpccxx;
-using namespace std;
 
-struct Server2 {
+struct Server {
   JsonRpcServer server;
   TestServerConnector connector;
 
-  Server2() : server(), connector(server) {}
+  Server() : server(), connector(server) {}
 };
 
-TEST_CASE_FIXTURE(Server2, "v2_method_not_found") {
+TEST_CASE_FIXTURE(Server, "method_not_found") {
   connector.CallMethod(1, "some_invalid_method", nullptr);
   connector.VerifyMethodError(-32601, "method not found: some_invalid_method", 1);
 }
 
-TEST_CASE_FIXTURE(Server2, "v2_malformed_requests") {
-  string name = "some_method";
+TEST_CASE_FIXTURE(Server, "malformed_requests") {
+  std::string name = "some_method";
   json params = nullptr;
 
   connector.SendRawRequest("dfasdf");
@@ -64,7 +62,7 @@ struct product {
   product() : id(), price(), name(), cat() {}
   int id;
   double price;
-  string name;
+  std::string name;
   category cat;
 };
 
@@ -88,23 +86,23 @@ public:
     else
       throw JsonRpcException(-32602, "b must not be 0");
   }
-  void some_procedure(const string &param) { param_proc = param; }
-  bool add_products(const vector<product> &products) {
+  void some_procedure(const std::string &param) { param_proc = param; }
+  bool add_products(const std::vector<product> &products) {
     std::copy(products.begin(), products.end(), std::back_inserter(catalog));
     return true;
   };
 
   void dirty_notification() { throw std::exception(); }
-  int dirty_method(int a, int b) { auto _ = to_string(a+b); throw std::exception(); }
+  int dirty_method(int a, int b) { auto _ = std::to_string(a+b); throw std::exception(); }
   int dirty_method2(int a, int b) { throw (a+b); }
 
-  string param_proc;
+  std::string param_proc;
   int param_a;
   int param_b;
-  vector<product> catalog;
+  std::vector<product> catalog;
 };
 
-TEST_CASE_FIXTURE(Server2, "v2_invocations") {
+TEST_CASE_FIXTURE(Server, "invocations") {
   TestServer t;
   REQUIRE(server.Add("add_function", GetHandle(&TestServer::add_function, t), {"a", "b"}));
   REQUIRE(server.Add("div_function", GetHandle(&TestServer::div_function, t), {"a", "b"}));
@@ -156,7 +154,7 @@ TEST_CASE_FIXTURE(Server2, "v2_invocations") {
   connector.VerifyMethodError(-32603, "internal server error", 1);
 }
 
-TEST_CASE_FIXTURE(Server2, "v2_batch") {
+TEST_CASE_FIXTURE(Server, "batch") {
   TestServer t;
   REQUIRE(server.Add("add_function", GetHandle(&TestServer::add_function, t), {"a", "b"}));
 

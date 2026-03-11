@@ -3,18 +3,17 @@
 #include <jsonrpccxx/server.hpp>
 
 using namespace jsonrpccxx;
-using namespace std;
 
 class TestServerConnector {
 public:
   explicit TestServerConnector(JsonRpcServer &handler) : handler(handler), raw_response() {}
 
-    void SendRawRequest(const string &request) { this->raw_response = handler.HandleRequest(request); }
+    void SendRawRequest(const std::string &request) { this->raw_response = handler.HandleRequest(request); }
     void SendRequest(const json &request) { SendRawRequest(request.dump()); }
-    static json BuildMethodCall(const json &id, const string &name, const json &params) { return {{"id", id}, {"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
-    void CallMethod(const json &id, const string &name, const json &params) { SendRequest(BuildMethodCall(id, name, params)); }
-    static json BuildNotificationCall(const string &name, const json &params) { return {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
-    void CallNotification(const string &name, const json &params) { SendRequest(BuildNotificationCall(name, params)); }
+    static json BuildMethodCall(const json &id, const std::string &name, const json &params) { return {{"id", id}, {"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
+    void CallMethod(const json &id, const std::string &name, const json &params) { SendRequest(BuildMethodCall(id, name, params)); }
+    static json BuildNotificationCall(const std::string &name, const json &params) { return {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
+    void CallNotification(const std::string &name, const json &params) { SendRequest(BuildNotificationCall(name, params)); }
 
     json VerifyMethodResult(const json &id) {
         json result = json::parse(this->raw_response);
@@ -37,14 +36,14 @@ public:
 
     void VerifyNotificationResult() { VerifyNotificationResult(this->raw_response); }
 
-    static void VerifyNotificationResult(string &raw_response) { REQUIRE(raw_response.empty()); }
+    static void VerifyNotificationResult(std::string &raw_response) { REQUIRE(raw_response.empty()); }
 
-    json VerifyMethodError(int code, const string &message, const json &id) {
+    json VerifyMethodError(int code, const std::string &message, const json &id) {
         json error = json::parse(this->raw_response);
         return VerifyMethodError(code, message, id, error);
     }
 
-    static json VerifyMethodError(int code, const string &message, const json &id, json &result) {
+    static json VerifyMethodError(int code, const std::string &message, const json &id, json &result) {
         REQUIRE(!result.contains("result"));
         REQUIRE(result["jsonrpc"] == "2.0");
         REQUIRE(result["id"] == id);
@@ -59,5 +58,5 @@ public:
 
 private:
     JsonRpcServer &handler;
-    string raw_response;
+    std::string raw_response;
 };

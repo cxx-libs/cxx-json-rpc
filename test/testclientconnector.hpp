@@ -7,14 +7,13 @@
 #include <string>
 
 using namespace jsonrpccxx;
-using namespace std;
 
 class TestClientConnector : public IClientConnector {
 public:
   TestClientConnector() : request(), raw_response() {}
 
   json request;
-  string raw_response;
+  std::string raw_response;
 
   std::string Send(const std::string &r) override {
     this->request = json::parse(r);
@@ -44,13 +43,13 @@ public:
     raw_response = response.dump();
   }
 
-  void VerifyMethodRequest(const string &name, json id) {
+  void VerifyMethodRequest(const std::string &name, json id) {
     CHECK(request["method"] == name);
     CHECK(request["id"] == id);
     CHECK(request["jsonrpc"] == "2.0");
   }
 
-  void VerifyNotificationRequest(const string &name) {
+  void VerifyNotificationRequest(const std::string &name) {
     CHECK(request["method"] == name);
     CHECK(request["jsonrpc"] == "2.0");
     CHECK(!request.contains("id"));

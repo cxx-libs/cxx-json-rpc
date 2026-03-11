@@ -1,26 +1,24 @@
 #include "doctest/doctest.h"
-#include <iostream>
 #include <jsonrpccxx/typemapper.hpp>
 #include <limits>
 
 using namespace jsonrpccxx;
-using namespace std;
 
-static string notifyResult = "";
+static std::string notifyResult = "";
 
 int add(int a, int b) { return a + b; }
-void notify(const std::string &hello) { notifyResult = string("Hello world: ") + hello; }
+void notify(const std::string &hello) { notifyResult = std::string("Hello world: ") + hello; }
 
 class SomeClass {
 public:
   int add(int a, int b) { return a + b; }
-  void notify(const std::string &hello) { notifyResult = string("Hello world: ") + hello; }
+  void notify(const std::string &hello) { notifyResult = std::string("Hello world: ") + hello; }
 };
 
 class SomeClassConst {
 public:
   int add(int a, int b) const { return a + b; } 
-  void notify(const std::string &hello) { notifyResult = string("Hello world: ") + hello; }
+  void notify(const std::string &hello) { notifyResult = std::string("Hello world: ") + hello; }
 };
 
 
@@ -98,7 +96,7 @@ struct product {
   product() : id(), price(), name(), cat() {}
   int id;
   double price;
-  string name;
+  std::string name;
   category cat;
 };
 
@@ -150,13 +148,13 @@ void from_json(const json &j, product &p) {
   j.at("category").get_to(p.cat);
 }
 
-static vector<product> catalog;
-bool add_products(const vector<product> &products) {
+static std::vector<product> catalog;
+bool add_products(const std::vector<product> &products) {
   std::copy(products.begin(), products.end(), std::back_inserter(catalog));
   return true;
 }
 
-string enumToString(const category& category) {
+std::string enumToString(const category& category) {
   switch (category) {
   case category::cash_carry: return "cash&carry";
   case category::order: return "online-order";
@@ -203,14 +201,14 @@ TEST_CASE("test number range checking") {
   REQUIRE_THROWS_WITH(mh(R"([-3,3])"_json), "-32602: invalid parameter: must be unsigned integer, but is integer, data: 0");
   REQUIRE_THROWS_WITH(mh(R"([null,3])"_json), "-32602: invalid parameter: must be unsigned integer, but is null, data: 0");
 
-  unsigned int max_us = numeric_limits<unsigned int>::max();
-  unsigned int max_s = numeric_limits<int>::max();
+  unsigned int max_us = std::numeric_limits<unsigned int>::max();
+  unsigned int max_s = std::numeric_limits<int>::max();
   CHECK(mh({max_us, max_s}) == max_us + max_s);
   REQUIRE_THROWS_WITH(mh({max_us, max_us}), "-32602: invalid parameter: exceeds value range of integer, data: 1");
 
   MethodHandle mh2 = GetHandle(&unsigned_add2);
-  unsigned short max_su = numeric_limits<unsigned short>::max();
-  unsigned short max_ss = numeric_limits<short>::max();
+  unsigned short max_su = std::numeric_limits<unsigned short>::max();
+  unsigned short max_ss = std::numeric_limits<short>::max();
   CHECK(mh2({max_su, max_ss}) == max_su + max_ss);
   REQUIRE_THROWS_WITH(mh2({max_su, max_su}), "-32602: invalid parameter: exceeds value range of integer, data: 1");
 }

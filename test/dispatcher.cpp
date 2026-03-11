@@ -1,13 +1,11 @@
 #include "doctest/doctest.h"
-#include <iostream>
 #include <jsonrpccxx/dispatcher.hpp>
 
 using namespace jsonrpccxx;
-using namespace std;
 
-static string procCache;
+static std::string procCache;
 unsigned int add_function(unsigned int a, unsigned int b) { return a + b; }
-void some_procedure(const string &param) { procCache = param; }
+void some_procedure(const std::string &param) { procCache = param; }
 
 TEST_CASE("add and invoke positional") {
   Dispatcher d;
