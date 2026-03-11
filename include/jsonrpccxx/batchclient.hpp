@@ -13,7 +13,7 @@ public:
   BatchRequest& AddMethodCall(const id_type &id, const std::string &name, const positional_parameter &params = {})
   {
     json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
-    if(std::get_if<int>(&id) != nullptr) request["id"] = std::get<int>(id);
+    if(std::get_if<std::int64_t>(&id) != nullptr) request["id"] = std::get<std::int64_t>(id);
     else request["id"] = std::get<std::string>(id);
     call.push_back(request);
     return *this;
@@ -22,7 +22,7 @@ public:
   BatchRequest& AddNamedMethodCall(const id_type &id, const std::string &name, const named_parameter &params = {})
   {
     json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
-    if(std::get_if<int>(&id) != nullptr) request["id"] = std::get<int>(id);
+    if(std::get_if<std::int64_t>(&id) != nullptr) request["id"] = std::get<std::int64_t>(id);
     else request["id"] = std::get<std::string>(id);
     call.push_back(request);
     return *this;

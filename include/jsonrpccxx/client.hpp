@@ -2,6 +2,7 @@
 
 #include "jsonrpccxx/iclientconnector.hpp"
 #include "jsonrpccxx/exception.hpp"
+#include <cstdint>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <variant>
@@ -11,7 +12,7 @@ namespace jsonrpccxx
 
 typedef std::vector<json> positional_parameter;
 typedef std::map<std::string, json> named_parameter;
-typedef std::variant<int, std::string> id_type;
+typedef std::variant<std::int64_t, std::string> id_type;
 
 struct JsonRpcResponse
 {
@@ -39,7 +40,7 @@ private:
   JsonRpcResponse call_method(const id_type &id, const std::string &name, const json &params) const
   {
     json j = {{"method", name}, {"jsonrpc", "2.0"}};
-    if(std::get_if<int>(&id) != nullptr) j["id"] = std::get<int>(id);
+    if(std::get_if<std::int64_t>(&id) != nullptr) j["id"] = std::get<std::int64_t>(id);
     else j["id"] = std::get<std::string>(id);
     if(!params.empty() && !params.is_null()) j["params"] = params;
     else if(params.is_array()) j["params"] = params;
