@@ -66,7 +66,7 @@ private:
       if(!response.contains("id") || !( response["id"].is_null() || response["id"].is_string() || response["id"].is_number_integer())) throw exception(internal_error, "The 'id' key is either missing or its type is invalid (expected 'null', 'string', 'integer').");
       if(response.contains("error") && response.contains("result")) throw exception(internal_error, "'error' and 'result' keys cannot both be present.");
 
-      if(response.contains("error") && response["error"].is_object()) throw exception::fromJson(response["error"]);
+      if(response.contains("error") && response["error"].is_object()) throw fromJson(response["error"]);
       else if(response.contains("error") && response["error"].is_string()) throw exception(internal_error, response["error"]);
       
       if(response.contains("result")) 

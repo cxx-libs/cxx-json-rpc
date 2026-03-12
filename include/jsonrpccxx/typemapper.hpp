@@ -97,7 +97,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                         invalid_params,
                         "invalid parameter: must be " + std::string(type_name(expectedType)) +
                         ", but is " + std::string(type_name(x.type())),
-                        index
+                        std::to_string(index)
                     );
                 }
             }
@@ -107,7 +107,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                     throw exception(
                         invalid_params,
                         "invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),
-                        index
+                        std::to_string(index)
                     );
                 }
             }
@@ -119,7 +119,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                     throw exception(
                         invalid_params,
                         "invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),
-                        index
+                        std::to_string(index)
                     );
                 }
             }
@@ -129,7 +129,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                     invalid_params,
                     "invalid parameter: must be " + std::string(type_name(expectedType)) +
                     ", but is " + std::string(type_name(x.type())),
-                    index
+                    std::to_string(index)
                 );
             }
         } else {
@@ -139,7 +139,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                     invalid_params,
                     "invalid parameter: must be " + std::string(type_name(expectedType)) +
                     ", but is " + std::string(type_name(x.type())),
-                    index
+                    std::to_string(index)
                 );
             }
         }

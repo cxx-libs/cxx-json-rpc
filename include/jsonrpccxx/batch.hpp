@@ -8,7 +8,18 @@
 namespace jsonrpccxx
 {
 
-
+  static inline exception fromJson(const nlohmann::json &value)
+  {
+    if (value.contains("code") && value["code"].is_number_integer() && value.contains("message") && value["message"].is_string())
+    {
+      if (value.contains("data")) {
+        return exception(value["code"], value["message"], value["data"].get<nlohmann::json>().dump());
+      } else {
+        return exception(value["code"], value["message"]);
+      }
+    }
+    return exception(internal_error, R"(invalid error response: "code" (integer number) and "message" (string) are required)");
+  }
   typedef std::vector<nlohmann::json> positional_parameter;
   typedef std::map<std::string, nlohmann::json> named_parameter;
 
@@ -98,7 +109,7 @@ T Get(const id_type& id)
     // Search in errors map
     if (errors.find(id) != errors.end())
     {
-        throw exception::fromJson(response[errors[id]]["error"]);
+        throw fromJson(response[errors[id]]["error"]);
     }
 
     throw exception(parse_error, "no result found for id " + std::visit([](const auto& v) {

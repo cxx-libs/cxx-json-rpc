@@ -69,8 +69,8 @@ nlohmann::json HandleSingleRequest( nlohmann::json &request)
         return ProcessSingleRequest(request);
       } catch (const exception &e) {
         nlohmann::json error = {{"code", e.Code()}, {"message", e.Message()}};
-        if (!e.Data().is_null()) {
-          error["data"] = e.Data();
+        if (!e.Data().empty()) {
+          error["data"] = nlohmann::json::parse(e.Data());
         }
         return nlohmann::json{{"id", id}, {"error", error}, {"jsonrpc", "2.0"}};
       } catch (const std::exception &e) {

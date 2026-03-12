@@ -41,8 +41,8 @@ public:
     {
       std::string message = e.Message() + " for parameter ";
       const auto found = mapping.find(name);
-      if(found != mapping.end()) message += "\"" + found->second[e.Data().get<std::size_t>()] + "\"";
-      else message += std::to_string(e.Data().get<unsigned int>());
+      if(found != mapping.end()) message += "\"" + found->second[std::stoi(e.Data())] + "\"";
+      else message += e.Data();
       return exception(e.Code(), message);
     }
     else return e;
