@@ -1,6 +1,7 @@
 #pragma once
 
 #include "jsonrpccxx/client.hpp"
+#include <cstddef>
 
 namespace jsonrpccxx
 {
@@ -55,29 +56,52 @@ public:
   {
     for(auto &[key, value] : response.items())
     {
-      if(value.is_object() && value.contains("id") && (value["id"].is_number() || value["id"].is_string()) && value.contains("result")) results[value["id"]] = std::stoi(key);
-      else if (value.is_object() && value.contains("id") && (value["id"].is_number() || value["id"].is_string()) && value.contains("error")) errors[value["id"]] = std::stoi(key);
+      id_type id;
+      if(value.is_object() && value.contains("id") && value["id"].is_number()) id = value["id"].get<std::int64_t>();
+      else if (value.is_object()&& value.contains("id") && value["id"].is_string()) id = value["id"].get<std::string>();
+      else
+      {
+        nullIds.push_back(std::stoi(key));
+        continue;
+      }
+      if(value.contains("result")) results[id] = std::stoi(key);
+      else if (value.contains("error")) errors[id] = std::stoi(key);
       else nullIds.push_back(std::stoi(key));
     }
   }
 #pragma GCC diagnostic pop
 
-  template<typename T> T Get(const json &id)
-  {
-    if(results.find(id) != results.end())
+
+template<typename T>
+T Get(const id_type& id)
+{
+
+    // Search in results map
+    if (results.find(id) != results.end())
     {
-      try
-      {
-        return response[results[id]]["result"].get<T>();
-      }
-      catch(const json::type_error &e)
-      {
-        throw JsonRpcException(parse_error, "invalid return type: " + std::string(e.what()));
-      }
+        try
+        {
+            return response[results[id]]["result"].get<T>();
+        }
+        catch (const json::type_error& e)
+        {
+            throw JsonRpcException(parse_error, "invalid return type: " + std::string(e.what()));
+        }
     }
-    else if(errors.find(id) != errors.end()) throw JsonRpcException::fromJson(response[errors[id]]["error"]);
-    throw JsonRpcException(parse_error, std::string("no result found for id ") + id.dump());
-  }
+
+    // Search in errors map
+    if (errors.find(id) != errors.end())
+    {
+        throw JsonRpcException::fromJson(response[errors[id]]["error"]);
+    }
+
+    throw JsonRpcException(parse_error, "no result found for id " + std::visit([](const auto& v) {
+        if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::string>)
+            return v;
+        else
+            return std::to_string(v);
+    }, id));
+}
 
   bool HasErrors() { return !errors.empty() || !nullIds.empty(); }
   
@@ -87,8 +111,8 @@ public:
 
 private:
   json response;
-  std::map<json, size_t> results;
-  std::map<json, size_t> errors;
+  std::map<id_type, size_t> results;
+  std::map<id_type, size_t> errors;
   std::vector<size_t> nullIds;
 };
 
