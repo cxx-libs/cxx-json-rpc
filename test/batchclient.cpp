@@ -2,7 +2,6 @@
 #include "testclientconnector.hpp"
 #include <jsonrpccxx/client.hpp>
 
-using namespace std;
 using namespace jsonrpc;
 
 TEST_CASE("batchresponse") {
@@ -12,12 +11,12 @@ TEST_CASE("batchresponse") {
                     {{"jsonrpc", "2.0"}, {"id", nullptr}, {"error", {{"code", -112}, {"message", "the error message"}}}},3});
 
   CHECK(br.HasErrors());
-  CHECK(br.Get<string>("1") == "someresultstring");
-  REQUIRE_THROWS_WITH(br.Get<string>(1), "-32700: no result found for id 1");
+  CHECK(br.Get<std::string>("1") == "someresultstring");
+  REQUIRE_THROWS_WITH(br.Get<std::string>(1), "-32700: no result found for id 1");
   CHECK(br.Get<int>("2") == 33);
   CHECK(br.Get<int>("2") == 33);
   REQUIRE_THROWS_WITH(br.Get<int>("1"), "-32700: invalid return type: [json.exception.type_error.302] type must be number, but is string");
-  REQUIRE_THROWS_WITH(br.Get<string>("3"), "-111: the error message");
+  REQUIRE_THROWS_WITH(br.Get<std::string>("3"), "-111: the error message");
   //REQUIRE_THROWS_WITH(br.Get<string>(nullptr), "-32700: no result found for id null");
 
   CHECK(br.GetInvalidIndexes().size() == 2);
@@ -62,7 +61,7 @@ TEST_CASE("batchclient") {
   r.AddMethodCall(1, "some_method", {"value1"});
   r.AddMethodCall(2, "some_method", {"value2"});
   BatchResponse response = client.BatchCall(r);
-  CHECK(response.Get<string>(1) == "result1");
+  CHECK(response.Get<std::string>(1) == "result1");
   CHECK(response.Get<int>(2) == 33);
 
   c.SetBatchResult("{}");
