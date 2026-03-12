@@ -29,7 +29,7 @@ TEST_CASE("batchresponse") {
 TEST_CASE("batchrequest") {
   BatchRequest br;
   TestClientConnector c;
-  json request = br.AddMethodCall(1, "some_method1", {"value1"})
+  nlohmann::json request = br.AddMethodCall(1, "some_method1", {"value1"})
                      .AddMethodCall("1", "some_method1", {"value1"})
                      .AddNamedMethodCall(2, "some_method2", {{"param1", "value1"}})
                      .AddNamedMethodCall("2", "some_method2", {{"param1", "value1"}})

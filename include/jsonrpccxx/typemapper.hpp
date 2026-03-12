@@ -33,7 +33,7 @@ namespace std
 namespace jsonrpccxx
 {
 
-typedef std::function<json(const nlohmann::json &)> MethodHandle;
+typedef std::function<nlohmann::json(const nlohmann::json &)> MethodHandle;
 typedef std::function<void(const nlohmann::json &)> NotificationHandle;
 
 // ================== Compile-time type mapping ==================
@@ -87,11 +87,11 @@ template<typename K, typename V> struct type_mapper<std::unordered_map<K, V>> { 
 }
 
 // -------------------- Parameter type checking --------------------
-template<typename T> inline void check_param_type(const std::size_t index,const json& x,const json::value_t expectedType)
+template<typename T> inline void check_param_type(const std::size_t index,const nlohmann::json& x,const nlohmann::json::value_t expectedType)
 {
         if constexpr (std::is_arithmetic_v<T>) {
             // Handle unsigned expectation but JSON is signed
-            if (expectedType == json::value_t::number_unsigned && x.type() == json::value_t::number_integer) {
+            if (expectedType == nlohmann::json::value_t::number_unsigned && x.type() == nlohmann::json::value_t::number_integer) {
                 if (x.get<long long>() < 0) {
                     throw exception(
                         invalid_params,
@@ -102,7 +102,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                 }
             }
             // Handle signed expectation but JSON is unsigned
-            else if (expectedType == json::value_t::number_integer && x.type() == json::value_t::number_unsigned) {
+            else if (expectedType == nlohmann::json::value_t::number_integer && x.type() == nlohmann::json::value_t::number_unsigned) {
                 if (x.get<unsigned long long>() > static_cast<unsigned long long>(std::numeric_limits<T>::max())) {
                     throw exception(
                         invalid_params,
@@ -112,8 +112,8 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                 }
             }
             // Handle float expectation but JSON is integer or unsigned
-            else if (expectedType == json::value_t::number_float &&
-                     (x.type() == json::value_t::number_integer || x.type() == json::value_t::number_unsigned)) {
+            else if (expectedType == nlohmann::json::value_t::number_float &&
+                     (x.type() == nlohmann::json::value_t::number_integer || x.type() == nlohmann::json::value_t::number_unsigned)) {
                 double val = x.get<double>();
                 if (val > std::numeric_limits<T>::max() || val < std::numeric_limits<T>::lowest()) {
                     throw exception(
@@ -149,7 +149,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
 
     template <typename ReturnType, typename... ParamTypes, std::size_t... index>
     MethodHandle createMethodHandle(std::function<ReturnType(ParamTypes...)> method, std::index_sequence<index...>) {
-        return [method](const json &params) -> json {
+        return [method](const nlohmann::json &params) -> nlohmann::json {
             constexpr size_t formalSize = sizeof...(ParamTypes);
             const size_t actualSize = params.size();
 
@@ -182,14 +182,14 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
         return GetHandle(std::function<ReturnType(ParamTypes...)>(f));
     }
 
-    inline MethodHandle GetUncheckedHandle(std::function<json(const json&)> f) {
-        return [f](const json &params) -> json { return f(params); };
+    inline MethodHandle GetUncheckedHandle(std::function<nlohmann::json(const nlohmann::json&)> f) {
+        return [f](const nlohmann::json &params) -> nlohmann::json { return f(params); };
     }
 
 // -------------------- NotificationHandle --------------------
 template<typename... ParamTypes, std::size_t... index> NotificationHandle createNotificationHandle(std::function<void(ParamTypes...)> method, std::index_sequence<index...>)
 {
-  return [method](const json& params) -> void 
+  return [method](const nlohmann::json& params) -> void 
   {
     constexpr std::size_t formalSize{sizeof...(ParamTypes)};
     const std::size_t actualSize{params.size()};
@@ -208,7 +208,7 @@ template<typename... ParamTypes> NotificationHandle GetHandle(std::function<void
 
 template<typename... ParamTypes> NotificationHandle GetHandle(void (*f)(ParamTypes...)) { return GetHandle(std::function<void(ParamTypes...)>(f)); }
 
-inline NotificationHandle GetUncheckedNotificationHandle(std::function<void(const json&)> f) { return [f](const json &params) -> void { f(params); }; }
+inline NotificationHandle GetUncheckedNotificationHandle(std::function<void(const nlohmann::json&)> f) { return [f](const nlohmann::json &params) -> void { f(params); }; }
 
 // -------------------- Member methods --------------------
 template<typename T, typename ReturnType, typename... ParamTypes> MethodHandle methodHandle(ReturnType (T::*method)(ParamTypes...), T &instance)

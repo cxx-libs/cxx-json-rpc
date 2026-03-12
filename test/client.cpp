@@ -14,21 +14,21 @@ struct F
 
 TEST_CASE_FIXTURE(F, "method_noparams") {
   c.SetResult(true);
-  client.CallMethod<json>("000-000-000", "some.method_1");
+  client.CallMethod<nlohmann::json>("000-000-000", "some.method_1");
   c.VerifyMethodRequest("some.method_1", "000-000-000");
   CHECK(!c.request.contains("params"));
 }
 
 TEST_CASE_FIXTURE(F, "method_call_params_empty") {
   c.SetResult(true);
-  client.CallMethod<json>("1", "some.method_1", {});
+  client.CallMethod<nlohmann::json>("1", "some.method_1", {});
   c.VerifyMethodRequest("some.method_1", "1");
   CHECK(c.request["params"].is_array());
   CHECK(c.request["params"].empty());
   CHECK(c.request["params"].dump() == "[]");
 
   c.SetResult(true);
-  client.CallMethod<json>("1", "some.method_1", json::array());
+  client.CallMethod<nlohmann::json>("1", "some.method_1", nlohmann::json::array());
   c.VerifyMethodRequest("some.method_1", "1");
   CHECK(c.request["params"].is_array());
   CHECK(c.request["params"].empty());
@@ -37,7 +37,7 @@ TEST_CASE_FIXTURE(F, "method_call_params_empty") {
 
 TEST_CASE_FIXTURE(F, "method_call_params_byname") {
   c.SetResult(true);
-  client.CallMethodNamed<json>("1", "some.method_1", {{"a", "hello"}, {"b", 77}, {"c", true}});
+  client.CallMethodNamed<nlohmann::json>("1", "some.method_1", {{"a", "hello"}, {"b", 77}, {"c", true}});
   c.VerifyMethodRequest("some.method_1", "1");
   CHECK(c.request["params"]["a"] == "hello");
   CHECK(c.request["params"]["b"] == 77);
@@ -46,7 +46,7 @@ TEST_CASE_FIXTURE(F, "method_call_params_byname") {
 
 TEST_CASE_FIXTURE(F, "method_call_params_byposition") {
   c.SetResult(true);
-  client.CallMethod<json>("1", "some.method_1", {"hello", 77, true});
+  client.CallMethod<nlohmann::json>("1", "some.method_1", {"hello", 77, true});
   c.VerifyMethodRequest("some.method_1", "1");
   CHECK(c.request["params"][0] == "hello");
   CHECK(c.request["params"][1] == 77);
@@ -62,7 +62,7 @@ TEST_CASE_FIXTURE(F, "method_result_simple") {
 
 TEST_CASE_FIXTURE(F, "method_result_object") {
   c.SetResult({{"a", 3}, {"b", 4}});
-  json r = client.CallMethod<json>("1", "some.method_1", {});
+  nlohmann::json r = client.CallMethod<nlohmann::json>("1", "some.method_1", {});
   c.VerifyMethodRequest("some.method_1", "1");
   CHECK(r["a"] == 3);
   CHECK(r["b"] == 4);
@@ -70,7 +70,7 @@ TEST_CASE_FIXTURE(F, "method_result_object") {
 
 TEST_CASE_FIXTURE(F, "method_result_array") {
   c.SetResult({2, 3, 4});
-  json r = client.CallMethod<json>("1", "some.method_1", {});
+  nlohmann::json r = client.CallMethod<nlohmann::json>("1", "some.method_1", {});
   c.VerifyMethodRequest("some.method_1", "1");
   CHECK(r[0] == 2);
   CHECK(r[1] == 3);
@@ -79,10 +79,10 @@ TEST_CASE_FIXTURE(F, "method_result_array") {
 
 TEST_CASE_FIXTURE(F, "method_result_empty") {
   c.raw_response = "{}";
-  REQUIRE_THROWS_WITH(client.CallMethod<json>("1", "some.method_1", {}), "-32603: The 'jsonrpc' key is either missing or its value is invalid (expected '2.0').");
+  REQUIRE_THROWS_WITH(client.CallMethod<nlohmann::json>("1", "some.method_1", {}), "-32603: The 'jsonrpc' key is either missing or its value is invalid (expected '2.0').");
   c.VerifyMethodRequest("some.method_1", "1");
   c.raw_response = "[]";
-  REQUIRE_THROWS_WITH(client.CallMethod<json>("1", "some.method_1", {}), "-32603: The 'jsonrpc' key is either missing or its value is invalid (expected '2.0').");
+  REQUIRE_THROWS_WITH(client.CallMethod<nlohmann::json>("1", "some.method_1", {}), "-32603: The 'jsonrpc' key is either missing or its value is invalid (expected '2.0').");
   c.VerifyMethodRequest("some.method_1", "1");
 }
 

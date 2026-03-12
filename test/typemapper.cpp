@@ -102,7 +102,7 @@ struct product {
 
 NLOHMANN_JSON_SERIALIZE_ENUM(category, {{category::order, "order"}, {category::cash_carry, "cc"}})
 
-void to_json(json &j, const product &p) { j = json{{"id", p.id}, {"price", p.price}, {"name", p.name}, {"category", p.cat}}; }
+void to_json(nlohmann::json &j, const product &p) { j = nlohmann::json{{"id", p.id}, {"price", p.price}, {"name", p.name}, {"category", p.cat}}; }
 
 product get_product(int id) {
   if (id == 1) {
@@ -126,7 +126,7 @@ product get_product(int id) {
 
 TEST_CASE("test with custom struct return") {
   MethodHandle mh = GetHandle(&get_product);
-  json j = mh(R"([1])"_json);
+  nlohmann::json j = mh(R"([1])"_json);
   CHECK(j["id"] == 1);
   CHECK(j["name"] == "some product");
   CHECK(j["price"] == 22.5);
@@ -141,7 +141,7 @@ TEST_CASE("test with custom struct return") {
   REQUIRE_THROWS_WITH(mh(R"([444])"_json), "-50000: product not found");
 }
 
-void from_json(const json &j, product &p) {
+void from_json(const nlohmann::json &j, product &p) {
   j.at("name").get_to(p.name);
   j.at("id").get_to(p.id);
   j.at("price").get_to(p.price);
@@ -165,14 +165,14 @@ std::string enumToString(const category& category) {
 TEST_CASE("test with enum as top level parameter") {
   MethodHandle  mh = GetHandle(&enumToString);
 
-  json params = R"(["cc"])"_json;
+  nlohmann::json params = R"(["cc"])"_json;
   CHECK(mh(params) == "cash&carry");
 }
 
 TEST_CASE("test with custom params") {
   MethodHandle mh = GetHandle(&add_products);
   catalog.clear();
-  json params =
+  nlohmann::json params =
       R"([[{"id": 1, "price": 22.50, "name": "some product", "category": "order"}, {"id": 2, "price": 55.50, "name": "some product 2", "category": "cc"}]])"_json;
 
   CHECK(mh(params) == true);
@@ -220,11 +220,11 @@ TEST_CASE("test auto conversion of float to int passed to float method") {
   CHECK(mh(R"([3.1,3.2])"_json) == doctest::Approx(6.3));
 }
 
-json arbitrary_json(const json& value) {
+nlohmann::json arbitrary_json(const nlohmann::json& value) {
   return value;
 }
 
-void arbitrary_json_notification(const json& value) {
+void arbitrary_json_notification(const nlohmann::json& value) {
   to_string(value);
 }
 

@@ -18,7 +18,7 @@ TEST_CASE_FIXTURE(Server, "method_not_found") {
 
 TEST_CASE_FIXTURE(Server, "malformed_requests") {
   std::string name = "some_method";
-  json params = nullptr;
+  nlohmann::json params = nullptr;
 
   connector.SendRawRequest("dfasdf");
   connector.VerifyMethodError(-32700, "parse error", nullptr);
@@ -66,8 +66,8 @@ struct product {
   category cat;
 };
 
-void to_json(json &j, const product &p);
-void from_json(const json &j, product &p);
+void to_json(nlohmann::json &j, const product &p);
+void from_json(const nlohmann::json &j, product &p);
 
 class TestServer {
 public:
@@ -127,7 +127,7 @@ TEST_CASE_FIXTURE(Server, "invocations") {
   connector.VerifyNotificationResult();
   CHECK(t.param_proc == "something set");
 
-  json params = json::parse(
+  nlohmann::json params = nlohmann::json::parse(
       R"({"products": [{"id": 1, "price": 23.3, "name": "some product", "category": "cc"},{"id": 2, "price": 23.4, "name": "some product 2", "category": "order"}]})");
 
   connector.CallMethod(1, "add_products", params);
@@ -158,7 +158,7 @@ TEST_CASE_FIXTURE(Server, "batch") {
   TestServer t;
   REQUIRE(server.Add("add_function", GetHandle(&TestServer::add_function, t), {"a", "b"}));
 
-  json batchcall;
+  nlohmann::json batchcall;
 
   batchcall.push_back(connector.BuildMethodCall(1, "add_function", {{"a", 3}, {"b", 4}}));
   batchcall.push_back(connector.BuildMethodCall(2, "add_function", {{"a", 300}, {"b", 4}}));
@@ -166,7 +166,7 @@ TEST_CASE_FIXTURE(Server, "batch") {
   batchcall.push_back("");
 
   connector.SendRequest(batchcall);
-  json batchresponse = connector.VerifyBatchResponse();
+  nlohmann::json batchresponse = connector.VerifyBatchResponse();
   REQUIRE(batchresponse.size() == 4);
 
   REQUIRE(TestServerConnector::VerifyMethodResult(1, batchresponse[0]) == 7);

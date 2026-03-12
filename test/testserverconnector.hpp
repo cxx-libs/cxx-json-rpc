@@ -9,18 +9,18 @@ public:
   explicit TestServerConnector(JsonRpcServer &handler) : handler(handler), raw_response() {}
 
     void SendRawRequest(const std::string &request) { this->raw_response = handler.HandleRequest(request); }
-    void SendRequest(const json &request) { SendRawRequest(request.dump()); }
-    static json BuildMethodCall(const json &id, const std::string &name, const json &params) { return {{"id", id}, {"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
-    void CallMethod(const json &id, const std::string &name, const json &params) { SendRequest(BuildMethodCall(id, name, params)); }
-    static json BuildNotificationCall(const std::string &name, const json &params) { return {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
-    void CallNotification(const std::string &name, const json &params) { SendRequest(BuildNotificationCall(name, params)); }
+    void SendRequest(const nlohmann::json &request) { SendRawRequest(request.dump()); }
+    static nlohmann::json BuildMethodCall(const nlohmann::json &id, const std::string &name, const nlohmann::json &params) { return {{"id", id}, {"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
+    void CallMethod(const nlohmann::json &id, const std::string &name, const nlohmann::json &params) { SendRequest(BuildMethodCall(id, name, params)); }
+    static nlohmann::json BuildNotificationCall(const std::string &name, const nlohmann::json &params) { return {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}}; }
+    void CallNotification(const std::string &name, const nlohmann::json &params) { SendRequest(BuildNotificationCall(name, params)); }
 
-    json VerifyMethodResult(const json &id) {
-        json result = json::parse(this->raw_response);
+    nlohmann::json VerifyMethodResult(const nlohmann::json &id) {
+        nlohmann::json result = nlohmann::json::parse(this->raw_response);
         return VerifyMethodResult(id, result);
     }
 
-    static json VerifyMethodResult(const json &id, json &result) {
+    static nlohmann::json VerifyMethodResult(const nlohmann::json &id, nlohmann::json &result) {
         REQUIRE(!result.contains("error"));
         REQUIRE(result["jsonrpc"] == "2.0");
         REQUIRE(result["id"] == id);
@@ -28,8 +28,8 @@ public:
         return result["result"];
     }
 
-    json VerifyBatchResponse() {
-        json result = json::parse(raw_response);
+    nlohmann::json VerifyBatchResponse() {
+        nlohmann::json result = nlohmann::json::parse(raw_response);
         REQUIRE(result.is_array());
         return result;
     }
@@ -38,12 +38,12 @@ public:
 
     static void VerifyNotificationResult(std::string &raw_response) { REQUIRE(raw_response.empty()); }
 
-    json VerifyMethodError(int code, const std::string &message, const json &id) {
-        json error = json::parse(this->raw_response);
+    nlohmann::json VerifyMethodError(int code, const std::string &message, const nlohmann::json &id) {
+        nlohmann::json error = nlohmann::json::parse(this->raw_response);
         return VerifyMethodError(code, message, id, error);
     }
 
-    static json VerifyMethodError(int code, const std::string &message, const json &id, json &result) {
+    static nlohmann::json VerifyMethodError(int code, const std::string &message, const nlohmann::json &id, nlohmann::json &result) {
         REQUIRE(!result.contains("result"));
         REQUIRE(result["jsonrpc"] == "2.0");
         REQUIRE(result["id"] == id);

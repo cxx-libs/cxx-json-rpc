@@ -9,17 +9,17 @@ namespace jsonrpccxx
 {
 
 
-  typedef std::vector<json> positional_parameter;
-  typedef std::map<std::string, json> named_parameter;
+  typedef std::vector<nlohmann::json> positional_parameter;
+  typedef std::map<std::string, nlohmann::json> named_parameter;
 
 class BatchRequest
 {
 public:
-  BatchRequest() : call(json::array()) {}
+  BatchRequest() : call(nlohmann::json::array()) {}
   
   BatchRequest& AddMethodCall(const id_type &id, const std::string &name, const positional_parameter &params = {})
   {
-    json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
+    nlohmann::json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
     if(std::get_if<std::int64_t>(&id) != nullptr) request["id"] = std::get<std::int64_t>(id);
     else request["id"] = std::get<std::string>(id);
     call.push_back(request);
@@ -28,7 +28,7 @@ public:
 
   BatchRequest& AddNamedMethodCall(const id_type &id, const std::string &name, const named_parameter &params = {})
   {
-    json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
+    nlohmann::json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
     if(std::get_if<std::int64_t>(&id) != nullptr) request["id"] = std::get<std::int64_t>(id);
     else request["id"] = std::get<std::string>(id);
     call.push_back(request);
@@ -47,10 +47,10 @@ public:
     return *this;
   }
 
-  const json &Build() const { return call; }
+  const nlohmann::json &Build() const { return call; }
 
 private:
-  json call;
+nlohmann::json call;
 };
 
 class BatchResponse
@@ -58,7 +58,7 @@ class BatchResponse
 public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
-  explicit BatchResponse(json &&response) : response(response)
+  explicit BatchResponse(nlohmann::json &&response) : response(response)
   {
     for(auto &[key, value] : response.items())
     {
@@ -89,7 +89,7 @@ T Get(const id_type& id)
         {
             return response[results[id]]["result"].get<T>();
         }
-        catch (const json::type_error& e)
+        catch (const nlohmann::json::type_error& e)
         {
             throw exception(parse_error, "invalid return type: " + std::string(e.what()));
         }
@@ -113,10 +113,10 @@ T Get(const id_type& id)
   
   const std::vector<size_t> GetInvalidIndexes() { return nullIds; }
   
-  const json& GetResponse() { return response; }
+  const nlohmann::json& GetResponse() { return response; }
 
 private:
-  json response;
+nlohmann::json response;
   std::unordered_map<id_type, size_t> results;
   std::unordered_map<id_type, size_t> errors;
   std::vector<size_t> nullIds;

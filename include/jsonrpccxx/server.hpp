@@ -31,56 +31,56 @@ public:
   {
   try
   {
-      json request = json::parse(requestString);
+    nlohmann::json request = nlohmann::json::parse(requestString);
       
       if(request.is_array())
       {
-        json result = json::array();
-        for(json &r : request)
+        nlohmann::json result = nlohmann::json::array();
+        for(nlohmann::json &r : request)
         {
-          json res = this->HandleSingleRequest(r);
+          nlohmann::json res = this->HandleSingleRequest(r);
           if(!res.is_null()) result.push_back(std::move(res));
         }
         return result.dump();
       }
       else if(request.is_object())
       {
-        const json res = HandleSingleRequest(request);
+        const nlohmann::json res = HandleSingleRequest(request);
         if(!res.is_null()) return res.dump();
         else return {};
       }
-      else return json{{"id", nullptr}, {"error", {{"code", invalid_request}, {"message", "invalid request: expected array or object"}}}, {"jsonrpc", "2.0"}}.dump();
+      else return nlohmann::json{{"id", nullptr}, {"error", {{"code", invalid_request}, {"message", "invalid request: expected array or object"}}}, {"jsonrpc", "2.0"}}.dump();
     }
-  catch(const json::parse_error &e)
+  catch(const nlohmann::json::parse_error &e)
   {
-    return json{{"id", nullptr}, {"error", {{"code", parse_error}, {"message", std::string("parse error: ") + e.what()}}}, {"jsonrpc", "2.0"}}.dump();
+    return nlohmann::json{{"id", nullptr}, {"error", {{"code", parse_error}, {"message", std::string("parse error: ") + e.what()}}}, {"jsonrpc", "2.0"}}.dump();
   }
 }
 protected:
   Dispatcher m_dispatcher;
 private:
-  json HandleSingleRequest( json &request)
+nlohmann::json HandleSingleRequest( nlohmann::json &request)
   {
-    json id = nullptr;
+    nlohmann::json id = nullptr;
       if (request.contains("id") && (request["id"].is_number() || request["id"].is_string() || request["id"].is_null())) {
         id = request["id"];
       }
       try {
         return ProcessSingleRequest(request);
       } catch (const exception &e) {
-        json error = {{"code", e.Code()}, {"message", e.Message()}};
+        nlohmann::json error = {{"code", e.Code()}, {"message", e.Message()}};
         if (!e.Data().is_null()) {
           error["data"] = e.Data();
         }
-        return json{{"id", id}, {"error", error}, {"jsonrpc", "2.0"}};
+        return nlohmann::json{{"id", id}, {"error", error}, {"jsonrpc", "2.0"}};
       } catch (const std::exception &e) {
-        return json{{"id", id}, {"error", {{"code", internal_error}, {"message", std::string("internal server error: ") + e.what()}}}, {"jsonrpc", "2.0"}};
+        return nlohmann::json{{"id", id}, {"error", {{"code", internal_error}, {"message", std::string("internal server error: ") + e.what()}}}, {"jsonrpc", "2.0"}};
       } catch (...) {
-        return json{{"id", id}, {"error", {{"code", internal_error}, {"message", std::string("internal server error")}}}, {"jsonrpc", "2.0"}};
+        return nlohmann::json{{"id", id}, {"error", {{"code", internal_error}, {"message", std::string("internal server error")}}}, {"jsonrpc", "2.0"}};
       }
   }
 
-  json ProcessSingleRequest( json &request)
+  nlohmann::json ProcessSingleRequest( nlohmann::json &request)
   {
       if (!request.contains("jsonrpc") || !request["jsonrpc"].is_string() || request["jsonrpc"] != "2.0") {
         throw exception(invalid_request, R"(invalid request: missing jsonrpc field set to "2.0")");
@@ -95,14 +95,14 @@ private:
         throw exception(invalid_request, "invalid request: params field must be an array, object or null");
       }
       if (! request.contains("params") || request["params"].is_null()) {
-        request["params"] = json::array();
+        request["params"] = nlohmann::json::array();
       }
       if (!request.contains("id")) {
         try {
           m_dispatcher.InvokeNotification(request["method"], request["params"]);
-          return json();
+          return nlohmann::json();
         } catch (const std::exception &) {
-          return json();
+          return nlohmann::json();
         }
       } else {
         return {{"jsonrpc", "2.0"}, {"id", request["id"]}, {"result", m_dispatcher.InvokeMethod(request["method"], request["params"])}};

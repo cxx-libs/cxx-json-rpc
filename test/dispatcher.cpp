@@ -27,7 +27,7 @@ TEST_CASE("invoking supported named parameter") {
 
   procCache = "";
   CHECK(d.Add("some notification", GetHandle(&some_procedure), {"param"}));
-  json p = {{"param", "some string"}};
+  nlohmann::json p = {{"param", "some string"}};
   d.InvokeNotification("some notification", p);
   CHECK(procCache == "some string");
 }
@@ -39,7 +39,7 @@ TEST_CASE("invoking missing named parameter") {
 
   procCache = "";
   CHECK(d.Add("some notification", GetHandle(&some_procedure), {"param"}));
-  json p = {{"param2", "some string"}};
+  nlohmann::json p = {{"param2", "some string"}};
   REQUIRE_THROWS_WITH(d.InvokeNotification("some notification", p), "-32602: invalid parameter: missing named parameter \"param\"");
   CHECK(procCache.empty());
 }
@@ -57,7 +57,7 @@ TEST_CASE("error on invoking unsupported named parameter") {
   REQUIRE_THROWS_WITH(d.InvokeMethod("some method", {{"a", 11}, {"b", 22}}), "-32602: invalid parameter: procedure doesn't support named parameter");
 
   CHECK(d.Add("some notification", GetHandle(&some_procedure)));
-  json p = {{"param", "some string"}};
+  nlohmann::json p = {{"param", "some string"}};
   REQUIRE_THROWS_WITH(d.InvokeNotification("some notification", p), "-32602: invalid parameter: procedure doesn't support named parameter");
 }
 

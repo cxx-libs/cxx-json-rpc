@@ -48,7 +48,7 @@ public:
     else return e;
   }
 
-  json InvokeMethod(const std::string &name, const json &params) const
+  nlohmann::json InvokeMethod(const std::string &name, const nlohmann::json &params) const
   {
     auto method = methods.find(name);
     if(method == methods.end()) throw exception(method_not_found, "method not found: " + name);
@@ -56,7 +56,7 @@ public:
     {
       return method->second(normalize_parameter(name, params));
     }
-    catch(const json::type_error &e)
+    catch(const nlohmann::json::type_error &e)
     {
       throw exception(invalid_params, "invalid parameter: " + std::string(e.what()));
     }
@@ -66,7 +66,7 @@ public:
     }
   }
 
-  void InvokeNotification(const std::string &name, const json &params) const
+  void InvokeNotification(const std::string &name, const nlohmann::json &params) const
   {
     auto notification = notifications.find(name);
     if(notification == notifications.end()) throw exception(method_not_found, "notification not found: " + name);
@@ -86,14 +86,14 @@ private:
   std::unordered_map<std::string, NotificationHandle> notifications;
   std::unordered_map<std::string, NamedParamMapping> mapping;
 
-  inline json normalize_parameter(const std::string &name, const json &params) const
+  inline nlohmann::json normalize_parameter(const std::string &name, const nlohmann::json &params) const
   {
     if(params.is_array()) return params;
     else if(params.is_object())
     {
       const auto found = mapping.find(name);
       if(found == mapping.end()) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
-      json result;
+      nlohmann::json result;
       for(auto const &p : found->second)
       {
         if(params.find(p) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p + "\"");

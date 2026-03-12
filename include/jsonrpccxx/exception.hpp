@@ -6,10 +6,6 @@
 
 namespace jsonrpccxx 
 {
-  typedef nlohmann::json json;
-
-
-
   class exception : public std::exception {
   public:
   exception(int code, const std::string &message) noexcept : code(code), message(message), data(nullptr), err(std::to_string(code) + ": " + message) {}
@@ -28,7 +24,7 @@ namespace jsonrpccxx
 
     int Code() const { return code; }
     const std::string& Message() const { return message; }
-    const json &Data() const { return data; }
+    const nlohmann::json &Data() const { return data; }
 
     const char* what() const noexcept override { return err.c_str(); }
 
@@ -37,7 +33,7 @@ namespace jsonrpccxx
       if (value.contains("code") && value["code"].is_number_integer() && value.contains("message") && value["message"].is_string())
       {
         if (value.contains("data")) {
-          return exception(value["code"], value["message"], value["data"].get<json>());
+          return exception(value["code"], value["message"], value["data"].get<nlohmann::json>());
         } else {
           return exception(value["code"], value["message"]);
         }
