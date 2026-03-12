@@ -10,6 +10,7 @@
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXUserAgent.h>
 #include <string>
+#include <iostream>
 
 class WebsocketClientConnector : public jsonrpc::IAsyncClientConnector
 {

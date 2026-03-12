@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 #include "jsonrpccxx/error_code.hpp"
-#include <iostream>
 
 namespace jsonrpc
 {
