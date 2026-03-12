@@ -10,24 +10,22 @@
 namespace jsonrpccxx
 {
 
-
-
-
-struct JsonRpcResponse
+struct Response
 {
-  id_type id;
+  id_t id;
   nlohmann::json result;
 };
 
 class JsonRpcClient
 {
 public:
-  JsonRpcClient(IClientConnector &connector) : connector(connector) {}
+  explicit JsonRpcClient(IClientConnector &connector) noexcept : connector(connector) {}
+  explicit JsonRpcClient() =delete;
   virtual ~JsonRpcClient() = default;
 
-  template <typename T = nlohmann::json> T CallMethod(const id_type &id, const std::string &name) { return call_method(id, name, nlohmann::json::object()).result.get<T>(); }
-  template <typename T = nlohmann::json> T CallMethod(const id_type &id, const std::string &name, const positional_parameter &params) { return call_method(id, name, params).result.get<T>(); }
-  template <typename T = nlohmann::json> T CallMethodNamed(const id_type &id, const std::string &name, const named_parameter &params = {}) { return call_method(id, name, params).result.get<T>(); }
+  template <typename T = nlohmann::json> T CallMethod(const id_t &id, const std::string &name) { return call_method(id, name, nlohmann::json::object()).result.get<T>(); }
+  template <typename T = nlohmann::json> T CallMethod(const id_t &id, const std::string &name, const positional_parameter &params) { return call_method(id, name, params).result.get<T>(); }
+  template <typename T = nlohmann::json> T CallMethodNamed(const id_t &id, const std::string &name, const named_parameter &params = {}) { return call_method(id, name, params).result.get<T>(); }
 
   void CallNotification(const std::string &name, const positional_parameter &params = {}) { call_notification(name, params); }
   void CallNotificationNamed(const std::string &name, const named_parameter &params = {}) { call_notification(name, params); }
@@ -49,10 +47,10 @@ public:
 
 
 protected:
-  IClientConnector &connector;
+  IClientConnector& connector;
 
 private:
-  JsonRpcResponse call_method(const id_type &id, const std::string &name, const nlohmann::json &params) const
+  Response call_method(const id_t &id, const std::string &name, const nlohmann::json &params) const
   {
     nlohmann::json j = {{"method", name}, {"jsonrpc", "2.0"}};
     if(std::get_if<std::int64_t>(&id) != nullptr) j["id"] = std::get<std::int64_t>(id);
@@ -71,8 +69,8 @@ private:
       
       if(response.contains("result")) 
       {
-        if(response["id"].is_string()) return JsonRpcResponse{response["id"].get<std::string>(), response["result"].get<nlohmann::json>()};
-        else return JsonRpcResponse{response["id"].get<int>(), response["result"].get<nlohmann::json>()};
+        if(response["id"].is_string()) return Response{response["id"].get<std::string>(), response["result"].get<nlohmann::json>()};
+        else return Response{response["id"].get<int>(), response["result"].get<nlohmann::json>()};
       }
       throw exception(internal_error, "invalid server response: neither 'result' nor 'error' fields found");
     }

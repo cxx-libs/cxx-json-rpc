@@ -28,7 +28,7 @@ class BatchRequest
 public:
   BatchRequest() : call(nlohmann::json::array()) {}
   
-  BatchRequest& AddMethodCall(const id_type &id, const std::string &name, const positional_parameter &params = {})
+  BatchRequest& AddMethodCall(const id_t &id, const std::string &name, const positional_parameter &params = {})
   {
     nlohmann::json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
     if(std::get_if<std::int64_t>(&id) != nullptr) request["id"] = std::get<std::int64_t>(id);
@@ -37,7 +37,7 @@ public:
     return *this;
   }
 
-  BatchRequest& AddNamedMethodCall(const id_type &id, const std::string &name, const named_parameter &params = {})
+  BatchRequest& AddNamedMethodCall(const id_t &id, const std::string &name, const named_parameter &params = {})
   {
     nlohmann::json request = {{"method", name}, {"params", params}, {"jsonrpc", "2.0"}};
     if(std::get_if<std::int64_t>(&id) != nullptr) request["id"] = std::get<std::int64_t>(id);
@@ -73,7 +73,7 @@ public:
   {
     for(auto &[key, value] : response.items())
     {
-      id_type id;
+      id_t id;
       if(value.is_object() && value.contains("id") && value["id"].is_number()) id = value["id"].get<std::int64_t>();
       else if (value.is_object()&& value.contains("id") && value["id"].is_string()) id = value["id"].get<std::string>();
       else
@@ -90,7 +90,7 @@ public:
 
 
 template<typename T>
-T Get(const id_type& id)
+T Get(const id_t& id)
 {
 
     // Search in results map
@@ -128,8 +128,8 @@ T Get(const id_type& id)
 
 private:
 nlohmann::json response;
-  std::unordered_map<id_type, size_t> results;
-  std::unordered_map<id_type, size_t> errors;
+  std::unordered_map<id_t, size_t> results;
+  std::unordered_map<id_t, size_t> errors;
   std::vector<size_t> nullIds;
 };
 

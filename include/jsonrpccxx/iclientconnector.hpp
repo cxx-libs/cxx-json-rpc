@@ -14,7 +14,7 @@
 namespace jsonrpccxx
 {
 
-using id_type =  std::variant<std::int64_t, std::string>;
+using id_t =  std::variant<std::int64_t, std::string>;
 
 
 class IClientConnector
@@ -76,7 +76,7 @@ public:
   {
     nlohmann::json j = nlohmann::json::parse(request);
     // Prepare promise/future for async
-    id_type id{0};
+    id_t id{0};
     if(!j.contains("id"))
     {
       Send(request);
@@ -124,7 +124,7 @@ protected:
   void Receive(const std::string_view response)
   {
     nlohmann::json j = nlohmann::json::parse(response);
-    id_type id{0};
+    id_t id{0};
     if(j["id"].is_string()) id=j["id"].get<std::string>();
     else id=j["id"].get<std::int64_t>();
     {
@@ -136,7 +136,7 @@ protected:
 
 private:
   std::mutex mtx_;
-  std::unordered_map<id_type, std::promise<std::string>> promises_;
+  std::unordered_map<id_t, std::promise<std::string>> promises_;
   bool m_async;
 };
 
