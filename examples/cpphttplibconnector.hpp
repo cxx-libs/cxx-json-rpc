@@ -13,7 +13,7 @@ public:
   std::string SendAndReceive(const std::string_view request) override final
   {
     auto res = httpClient.Post("/jsonrpc", std::string(request), "application/json");
-    if(!res || res->status != 200) throw jsonrpccxx::JsonRpcException(-32003, "client connector error, received status != 200");
+    if(!res || res->status != 200) throw jsonrpccxx::exception(-32003, "client connector error, received status != 200");
     return res->body;
   }
 

@@ -93,7 +93,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
             // Handle unsigned expectation but JSON is signed
             if (expectedType == json::value_t::number_unsigned && x.type() == json::value_t::number_integer) {
                 if (x.get<long long>() < 0) {
-                    throw JsonRpcException(
+                    throw exception(
                         invalid_params,
                         "invalid parameter: must be " + std::string(type_name(expectedType)) +
                         ", but is " + std::string(type_name(x.type())),
@@ -104,7 +104,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
             // Handle signed expectation but JSON is unsigned
             else if (expectedType == json::value_t::number_integer && x.type() == json::value_t::number_unsigned) {
                 if (x.get<unsigned long long>() > static_cast<unsigned long long>(std::numeric_limits<T>::max())) {
-                    throw JsonRpcException(
+                    throw exception(
                         invalid_params,
                         "invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),
                         index
@@ -116,7 +116,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
                      (x.type() == json::value_t::number_integer || x.type() == json::value_t::number_unsigned)) {
                 double val = x.get<double>();
                 if (val > std::numeric_limits<T>::max() || val < std::numeric_limits<T>::lowest()) {
-                    throw JsonRpcException(
+                    throw exception(
                         invalid_params,
                         "invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),
                         index
@@ -125,7 +125,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
             }
             // Type mismatch
             else if (x.type() != expectedType) {
-                throw JsonRpcException(
+                throw exception(
                     invalid_params,
                     "invalid parameter: must be " + std::string(type_name(expectedType)) +
                     ", but is " + std::string(type_name(x.type())),
@@ -135,7 +135,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
         } else {
             // Non-arithmetic types: just check type
             if (x.type() != expectedType) {
-                throw JsonRpcException(
+                throw exception(
                     invalid_params,
                     "invalid parameter: must be " + std::string(type_name(expectedType)) +
                     ", but is " + std::string(type_name(x.type())),
@@ -154,7 +154,7 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
             const size_t actualSize = params.size();
 
             if (actualSize != formalSize) {
-                throw JsonRpcException(
+                throw exception(
                     invalid_params,
                     "invalid parameter: expected " + std::to_string(formalSize) +
                     " argument(s), but found " + std::to_string(actualSize)
@@ -193,7 +193,7 @@ template<typename... ParamTypes, std::size_t... index> NotificationHandle create
   {
     constexpr std::size_t formalSize{sizeof...(ParamTypes)};
     const std::size_t actualSize{params.size()};
-    if(actualSize != formalSize) throw JsonRpcException(invalid_params,"invalid parameter: expected " + std::to_string(formalSize) + " argument(s), but found " + std::to_string(actualSize));
+    if(actualSize != formalSize) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(formalSize) + " argument(s), but found " + std::to_string(actualSize));
     (check_param_type<std::decay_t<ParamTypes>>(index, params[index], type_mapper<std::decay_t<ParamTypes>>::value), ...);
     method(params[index].get<std::decay_t<ParamTypes>>()...);
   };

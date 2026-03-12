@@ -35,7 +35,7 @@ public:
     raw_response = response.dump();
   }
 
-  void SetError(const JsonRpcException &e) {
+  void SetError(const exception &e) {
     json response = {{"jsonrpc", "2.0"}, {"id", "1"}};
     if (!e.Data().empty()) {
       response["error"] = {{"code", e.Code()}, {"message", e.Message()}, {"data", e.Data()}};

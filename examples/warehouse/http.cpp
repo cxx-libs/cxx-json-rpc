@@ -51,14 +51,14 @@ void doWarehouseStuff(IClientConnector &clientConnector) {
   cout << "Found product: " << p2.name << "\n";
   try {
     appClient.GetProduct("0xff2");
-  } catch (const JsonRpcException &e) {
+  } catch (const jsonrpccxx::exception &e) {
     cerr << "Error finding product: " << e.what() << "\n";
   }
 
   try {
   Product p3 = appClient.GetProduct("0x2f");
   cout << "Found product: " << p3.name << " at price : "<< p3.price << "\n";
-} catch (const JsonRpcException &e) {
+} catch (const jsonrpccxx::exception &e) {
   cerr << "Error finding product: " << e.what() << "\n";
 }
 

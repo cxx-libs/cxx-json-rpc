@@ -12,7 +12,7 @@ bool WarehouseServer::AddProduct(const Product &p) {
 
 const Product& WarehouseServer::GetProduct(const std::string &id) const {
   if (products.find(id) == products.end())
-    throw JsonRpcException(-33000, "No product listed for id: " + id);
+    throw exception(-33000, "No product listed for id: " + id);
   return products.at(id);
 }
 std::vector<Product> WarehouseServer::AllProducts() {

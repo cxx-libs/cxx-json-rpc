@@ -67,7 +67,7 @@ private:
       }
       try {
         return ProcessSingleRequest(request);
-      } catch (const JsonRpcException &e) {
+      } catch (const exception &e) {
         json error = {{"code", e.Code()}, {"message", e.Message()}};
         if (!e.Data().is_null()) {
           error["data"] = e.Data();
@@ -83,16 +83,16 @@ private:
   json ProcessSingleRequest( json &request)
   {
       if (!request.contains("jsonrpc") || !request["jsonrpc"].is_string() || request["jsonrpc"] != "2.0") {
-        throw JsonRpcException(invalid_request, R"(invalid request: missing jsonrpc field set to "2.0")");
+        throw exception(invalid_request, R"(invalid request: missing jsonrpc field set to "2.0")");
       }
       if (!request.contains("method") || !request["method"].is_string()) {
-        throw JsonRpcException(invalid_request, "invalid request: method field must be a string");
+        throw exception(invalid_request, "invalid request: method field must be a string");
       }
       if ( request.contains("id") && !(request.contains("id") && (request["id"].is_number() || request["id"].is_string() || request["id"].is_null()))) {
-        throw JsonRpcException(invalid_request, "invalid request: id field must be a number, string or null");
+        throw exception(invalid_request, "invalid request: id field must be a number, string or null");
       }
       if ( request.contains("params") && !(request["params"].is_array() || request["params"].is_object() || request["params"].is_null())) {
-        throw JsonRpcException(invalid_request, "invalid request: params field must be an array, object or null");
+        throw exception(invalid_request, "invalid request: params field must be an array, object or null");
       }
       if (! request.contains("params") || request["params"].is_null()) {
         request["params"] = json::array();

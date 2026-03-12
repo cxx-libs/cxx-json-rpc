@@ -121,7 +121,7 @@ product get_product(int id) {
     p.cat = category::cash_carry;
     return p;
   }
-  throw JsonRpcException(-50000, "product not found");
+  throw exception(-50000, "product not found");
 }
 
 TEST_CASE("test with custom struct return") {

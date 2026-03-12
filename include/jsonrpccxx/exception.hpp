@@ -4,15 +4,16 @@
 #include <string>
 #include "jsonrpccxx/error_code.hpp"
 
-namespace jsonrpccxx {
+namespace jsonrpccxx 
+{
   typedef nlohmann::json json;
 
 
 
-  class JsonRpcException : public std::exception {
+  class exception : public std::exception {
   public:
-    JsonRpcException(int code, const std::string &message) noexcept : code(code), message(message), data(nullptr), err(std::to_string(code) + ": " + message) {}
-    JsonRpcException(int code, const std::string &message, const nlohmann::json &data) noexcept
+  exception(int code, const std::string &message) noexcept : code(code), message(message), data(nullptr), err(std::to_string(code) + ": " + message) {}
+  exception(int code, const std::string &message, const nlohmann::json &data) noexcept
         : code(code), message(message), data(data), err(std::to_string(code) + ": " + message + ", data: " + data.dump()) {}
 
     error_type Type() const {
@@ -31,17 +32,17 @@ namespace jsonrpccxx {
 
     const char* what() const noexcept override { return err.c_str(); }
 
-    static inline JsonRpcException fromJson(const nlohmann::json &value)
+    static inline exception fromJson(const nlohmann::json &value)
     {
       if (value.contains("code") && value["code"].is_number_integer() && value.contains("message") && value["message"].is_string())
       {
         if (value.contains("data")) {
-          return JsonRpcException(value["code"], value["message"], value["data"].get<json>());
+          return exception(value["code"], value["message"], value["data"].get<json>());
         } else {
-          return JsonRpcException(value["code"], value["message"]);
+          return exception(value["code"], value["message"]);
         }
       }
-      return JsonRpcException(internal_error, R"(invalid error response: "code" (integer number) and "message" (string) are required)");
+      return exception(internal_error, R"(invalid error response: "code" (integer number) and "message" (string) are required)");
     }
 
   private:

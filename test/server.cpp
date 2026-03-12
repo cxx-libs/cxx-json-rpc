@@ -84,7 +84,7 @@ public:
     if (b != 0)
       return a / b;
     else
-      throw JsonRpcException(-32602, "b must not be 0");
+      throw exception(-32602, "b must not be 0");
   }
   void some_procedure(const std::string &param) { param_proc = param; }
   bool add_products(const std::vector<product> &products) {

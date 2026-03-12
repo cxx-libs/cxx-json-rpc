@@ -1,20 +1,17 @@
 #include "doctest/doctest.h"
 #include <jsonrpccxx/exception.hpp>
 
-using namespace std;
-using namespace jsonrpccxx;
-
 TEST_CASE("exception error type") {
-  CHECK(JsonRpcException(-32700, "").Type() == parse_error);
-  CHECK(JsonRpcException(-32600, "").Type() == invalid_request);
-  CHECK(JsonRpcException(-32601, "").Type() == method_not_found);
-  CHECK(JsonRpcException(-32602, "").Type() == invalid_params);
-  CHECK(JsonRpcException(-32603, "").Type() == internal_error);
+  CHECK(jsonrpccxx::exception(-32700, "").Type() == jsonrpccxx::parse_error);
+  CHECK(jsonrpccxx::exception(-32600, "").Type() == jsonrpccxx::invalid_request);
+  CHECK(jsonrpccxx::exception(-32601, "").Type() == jsonrpccxx::method_not_found);
+  CHECK(jsonrpccxx::exception(-32602, "").Type() == jsonrpccxx::invalid_params);
+  CHECK(jsonrpccxx::exception(-32603, "").Type() == jsonrpccxx::internal_error);
 
   for(int c = -32000; c >= -32099; c--)
-    CHECK(JsonRpcException(c, "").Type() == server_error);
+    CHECK(jsonrpccxx::exception(c, "").Type() == jsonrpccxx::server_error);
 
-  CHECK(JsonRpcException(0, "").Type() == invalid);
-  CHECK(JsonRpcException(32700, "").Type() == invalid);
-  CHECK(JsonRpcException(33000, "").Type() == invalid);
+  CHECK(jsonrpccxx::exception(0, "").Type() == jsonrpccxx::invalid);
+  CHECK(jsonrpccxx::exception(32700, "").Type() == jsonrpccxx::invalid);
+  CHECK(jsonrpccxx::exception(33000, "").Type() == jsonrpccxx::invalid);
 }

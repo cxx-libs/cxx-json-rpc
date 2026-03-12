@@ -91,17 +91,17 @@ T Get(const id_type& id)
         }
         catch (const json::type_error& e)
         {
-            throw JsonRpcException(parse_error, "invalid return type: " + std::string(e.what()));
+            throw exception(parse_error, "invalid return type: " + std::string(e.what()));
         }
     }
 
     // Search in errors map
     if (errors.find(id) != errors.end())
     {
-        throw JsonRpcException::fromJson(response[errors[id]]["error"]);
+        throw exception::fromJson(response[errors[id]]["error"]);
     }
 
-    throw JsonRpcException(parse_error, "no result found for id " + std::visit([](const auto& v) {
+    throw exception(parse_error, "no result found for id " + std::visit([](const auto& v) {
         if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::string>)
             return v;
         else
