@@ -1,7 +1,6 @@
 #include "doctest/doctest.h"
 #include "testclientconnector.hpp"
-#include <iostream>
-#include <jsonrpccxx/batchclient.hpp>
+#include <jsonrpccxx/client.hpp>
 
 using namespace std;
 using namespace jsonrpccxx;
@@ -56,7 +55,7 @@ TEST_CASE("batchrequest") {
 
 TEST_CASE("batchclient") {
   TestClientConnector c;
-  BatchClient client(c);
+  JsonRpcClient client(c);
   c.SetBatchResult({TestClientConnector::BuildResult("result1", 1), TestClientConnector::BuildResult(33, 2)});
 
   BatchRequest r;

@@ -1,10 +1,16 @@
 #pragma once
 
 #include "jsonrpccxx/client.hpp"
+
 #include <cstddef>
+#include <unordered_map>
 
 namespace jsonrpccxx
 {
+
+
+  typedef std::vector<json> positional_parameter;
+  typedef std::map<std::string, json> named_parameter;
 
 class BatchRequest
 {
@@ -111,30 +117,9 @@ T Get(const id_type& id)
 
 private:
   json response;
-  std::map<id_type, size_t> results;
-  std::map<id_type, size_t> errors;
+  std::unordered_map<id_type, size_t> results;
+  std::unordered_map<id_type, size_t> errors;
   std::vector<size_t> nullIds;
-};
-
-class BatchClient : public JsonRpcClient
-{
-public:
-  explicit BatchClient(IClientConnector &connector) : JsonRpcClient(connector) {}
-  
-  BatchResponse BatchCall(const BatchRequest &request)
-  {
-    try
-    {
-      
-      json response = json::parse(connector.SendRequest(request.Build().dump()));
-      if(!response.is_array()) throw JsonRpcException(parse_error, "invalid JSON response from server: expected array");
-      return BatchResponse(std::move(response));
-    }
-    catch(const json::parse_error &e)
-    {
-      throw JsonRpcException(parse_error, std::string("invalid JSON response from server: ") + e.what());
-    }
-  }
 };
 
 }

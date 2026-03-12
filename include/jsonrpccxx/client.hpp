@@ -4,13 +4,13 @@
 #include "jsonrpccxx/exception.hpp"
 #include <cstdint>
 #include <nlohmann/json.hpp>
+#include "jsonrpccxx/batch.hpp"
 #include <string>
 
 namespace jsonrpccxx
 {
 
-typedef std::vector<json> positional_parameter;
-typedef std::map<std::string, json> named_parameter;
+
 
 
 struct JsonRpcResponse
@@ -31,6 +31,22 @@ public:
 
   void CallNotification(const std::string &name, const positional_parameter &params = {}) { call_notification(name, params); }
   void CallNotificationNamed(const std::string &name, const named_parameter &params = {}) { call_notification(name, params); }
+
+  BatchResponse BatchCall(const BatchRequest &request)
+  {
+    try
+    {
+      
+      json response = json::parse(connector.SendRequest(request.Build().dump()));
+      if(!response.is_array()) throw JsonRpcException(parse_error, "invalid JSON response from server: expected array");
+      return BatchResponse(std::move(response));
+    }
+    catch(const json::parse_error &e)
+    {
+      throw JsonRpcException(parse_error, std::string("invalid JSON response from server: ") + e.what());
+    }
+  }
+
 
 protected:
   IClientConnector &connector;
