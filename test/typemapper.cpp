@@ -2,7 +2,7 @@
 #include <jsonrpccxx/typemapper.hpp>
 #include <limits>
 
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 static std::string notifyResult = "";
 

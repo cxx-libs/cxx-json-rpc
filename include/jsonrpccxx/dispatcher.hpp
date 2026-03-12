@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
 using NamedParamMapping = std::vector<std::string>;
@@ -106,4 +106,4 @@ private:
 
 };
 
-} // namespace jsonrpccxx
+} // namespace jsonrpc

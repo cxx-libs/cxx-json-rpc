@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
   static inline exception fromJson(const nlohmann::json &value)

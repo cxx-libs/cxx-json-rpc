@@ -3,7 +3,7 @@
 #include <string>
 #include "jsonrpccxx/error_code.hpp"
 
-namespace jsonrpccxx 
+namespace jsonrpc
 {
   class exception : public std::exception {
   public:
@@ -37,4 +37,4 @@ namespace jsonrpccxx
     std::string data;
     std::string err;
   };
-} // namespace jsonrpccxx
+} // namespace jsonrpc

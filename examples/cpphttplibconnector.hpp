@@ -6,14 +6,14 @@
 #include <string>
 #include <thread>
 
-class CppHttpLibClientConnector : public jsonrpccxx::ISyncClientConnector
+class CppHttpLibClientConnector : public jsonrpc::ISyncClientConnector
 {
 public:
   explicit CppHttpLibClientConnector(const std::string &host,const int port) : httpClient(host.c_str(), port) {}
   std::string SendAndReceive(const std::string_view request) override final
   {
     auto res = httpClient.Post("/jsonrpc", std::string(request), "application/json");
-    if(!res || res->status != 200) throw jsonrpccxx::exception(-32003, "client connector error, received status != 200");
+    if(!res || res->status != 200) throw jsonrpc::exception(-32003, "client connector error, received status != 200");
     return res->body;
   }
 
@@ -24,7 +24,7 @@ private:
 class CppHttpLibServerConnector
 {
 public:
-  explicit CppHttpLibServerConnector(jsonrpccxx::JsonRpcServer &server,const int port) : server(server), port(port)
+  explicit CppHttpLibServerConnector(jsonrpc::JsonRpcServer &server,const int port) : server(server), port(port)
   {
     httpServer.Post("/jsonrpc", [this](const httplib::Request &req, httplib::Response &res) { this->PostAction(req, res); });
   }
@@ -49,7 +49,7 @@ public:
 
 private:
   std::thread thread;
-  jsonrpccxx::JsonRpcServer &server;
+  jsonrpc::JsonRpcServer &server;
   httplib::Server httpServer;
   int port;
 

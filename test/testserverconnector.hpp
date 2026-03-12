@@ -2,7 +2,7 @@
 #include "doctest/doctest.h"
 #include <jsonrpccxx/server.hpp>
 
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 class TestServerConnector {
 public:

@@ -2,7 +2,7 @@
 #include "testserverconnector.hpp"
 #include <jsonrpccxx/server.hpp>
 #include <string>
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 struct Server {
   JsonRpcServer server;

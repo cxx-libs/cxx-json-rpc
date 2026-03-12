@@ -6,9 +6,9 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
-class TestClientConnector : public jsonrpccxx::ISyncClientConnector {
+class TestClientConnector : public jsonrpc::ISyncClientConnector {
 public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"

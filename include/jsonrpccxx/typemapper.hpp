@@ -30,7 +30,7 @@ namespace std
   template <typename... Ts> struct tuple;
 }
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
 typedef std::function<nlohmann::json(const nlohmann::json &)> MethodHandle;
@@ -281,4 +281,4 @@ template<typename T, typename... ParamTypes> NotificationHandle GetHandle(void (
         return notificationHandle(std::function<void(ParamTypes...)>(function));
     }
 
-} // namespace jsonrpccxx
+} // namespace json

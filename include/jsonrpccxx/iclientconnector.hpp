@@ -11,7 +11,7 @@
 #include "jsonrpccxx/error_code.hpp"
 #include <iostream>
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
 using id_t =  std::variant<std::int64_t, std::string>;

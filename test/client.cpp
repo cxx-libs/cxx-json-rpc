@@ -3,7 +3,7 @@
 #include <jsonrpccxx/client.hpp>
 
 using namespace std;
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 struct F
 {

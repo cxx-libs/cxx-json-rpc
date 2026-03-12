@@ -3,7 +3,7 @@
 #include <jsonrpccxx/client.hpp>
 
 using namespace std;
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 TEST_CASE("batchresponse") {
   BatchResponse br({{{"jsonrpc", "2.0"}, {"id", "1"}, {"result", "someresultstring"}},

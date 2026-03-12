@@ -3,7 +3,7 @@
 #include "jsonrpccxx/dispatcher.hpp"
 #include <string>
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
 class JsonRpcServer

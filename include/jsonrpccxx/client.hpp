@@ -7,7 +7,7 @@
 #include "jsonrpccxx/batch.hpp"
 #include <string>
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
 struct Response
@@ -89,4 +89,4 @@ private:
   }
 };
 
-} // namespace jsonrpccxx
+} // namespace jsonrpc

@@ -1,7 +1,7 @@
 #include "doctest/doctest.h"
 #include <jsonrpccxx/dispatcher.hpp>
 
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 static std::string procCache;
 unsigned int add_function(unsigned int a, unsigned int b) { return a + b; }

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace jsonrpccxx
+namespace jsonrpc
 {
 
 

@@ -11,7 +11,7 @@
 #include <ixwebsocket/IXUserAgent.h>
 #include <string>
 
-class WebsocketClientConnector : public jsonrpccxx::IAsyncClientConnector
+class WebsocketClientConnector : public jsonrpc::IAsyncClientConnector
 {
 public:
   explicit WebsocketClientConnector(const std::string &host, int port)
@@ -50,7 +50,7 @@ private:
 class WebsocketServer
 {
 public:
-  explicit WebsocketServer(jsonrpccxx::JsonRpcServer &server,const std::string &host, int port) : server(server),m_server(port,host)
+  explicit WebsocketServer(jsonrpc::JsonRpcServer &server,const std::string &host, int port) : server(server),m_server(port,host)
   {
     ix::initNetSystem();
     m_server.setOnClientMessageCallback([this](std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket & webSocket, const ix::WebSocketMessagePtr & msg)
@@ -85,6 +85,6 @@ public:
 
 
 private:
-  jsonrpccxx::JsonRpcServer &server;
+  jsonrpc::JsonRpcServer &server;
   ix::WebSocketServer m_server;
 };

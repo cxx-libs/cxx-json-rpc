@@ -1,7 +1,7 @@
 #include "warehouseapp.hpp"
 #include <jsonrpccxx/exception.hpp>
 
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 bool WarehouseServer::AddProduct(const Product &p) {
   if (products.find(p.id) != products.end())

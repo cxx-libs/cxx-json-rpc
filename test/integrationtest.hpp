@@ -4,7 +4,7 @@
 #include <jsonrpccxx/client.hpp>
 #include <jsonrpccxx/server.hpp>
 
-using namespace jsonrpccxx;
+using namespace jsonrpc;
 
 struct IntegrationTest
 {
