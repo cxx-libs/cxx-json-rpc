@@ -11,7 +11,7 @@ public:
     products() {}
 
   bool AddProduct(const Product &p);
-  const Product& GetProduct(const std::string& id);
+  const Product& GetProduct(const std::string& id) const;
   std::vector<Product> AllProducts();
 
   void Notify(const int a, const int b ) 

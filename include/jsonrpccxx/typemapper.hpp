@@ -221,4 +221,23 @@ namespace jsonrpccxx {
       };
       return GetHandle(function);
   }
+
+
+  template <typename T, typename ReturnType, typename... ParamTypes>
+  MethodHandle methodHandle(ReturnType (T::*method)(ParamTypes...) const, const T &instance) {
+      std::function<ReturnType(ParamTypes...)> function = [&instance, method](ParamTypes &&... params) -> ReturnType {
+          return (instance.*method)(std::forward<ParamTypes>(params)...);
+      };
+      return methodHandle(function);
+  }
+  
+  template <typename T, typename... ParamTypes>
+  NotificationHandle notificationHandle(void (T::*method)(ParamTypes...) const, const T &instance) {
+      std::function<void(ParamTypes...)> function = [&instance, method](ParamTypes &&... params) -> void {
+          (instance.*method)(std::forward<ParamTypes>(params)...);
+      };
+      return notificationHandle(function);
+  }
+
+
 }
