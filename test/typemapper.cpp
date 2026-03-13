@@ -23,11 +23,11 @@ public:
 
 
 TEST_CASE("test function binding") {
-  MethodHandle mh = GetHandle(&add);
+  Method mh = GetHandle(&add);
   CHECK(mh(R"([3, 4])"_json) == 7);
 
   notifyResult = "";
-  NotificationHandle mh2 = GetHandle(&notify);
+  Notification mh2 = GetHandle(&notify);
   CHECK(notifyResult.empty());
   mh2(R"(["someone"])"_json);
   CHECK(notifyResult == "Hello world: someone");
@@ -35,11 +35,11 @@ TEST_CASE("test function binding") {
 
 TEST_CASE("test class member binding") {
   SomeClass instance;
-  MethodHandle mh = GetHandle(&SomeClass::add, instance);
+  Method mh = GetHandle(&SomeClass::add, instance);
   CHECK(mh(R"([3, 4])"_json) == 7);
 
   notifyResult = "";
-  NotificationHandle mh2 = GetHandle(&SomeClass::notify, instance);
+  Notification mh2 = GetHandle(&SomeClass::notify, instance);
   CHECK(notifyResult.empty());
   mh2(R"(["someone"])"_json);
   CHECK(notifyResult == "Hello world: someone");
@@ -47,25 +47,13 @@ TEST_CASE("test class member binding") {
 
 TEST_CASE("test const class member binding") {
   SomeClassConst instance;
-  MethodHandle mh = GetHandle(&SomeClassConst::add, instance);
+  Method mh = GetHandle(&SomeClassConst::add, instance);
   CHECK(mh(R"([3, 4])"_json) == 7);
-}
-
-TEST_CASE("test class member explicit binding") {
-  SomeClass instance;
-  MethodHandle mh = methodHandle(&SomeClass::add, instance);
-  CHECK(mh(R"([3, 4])"_json) == 7);
-
-  notifyResult = "";
-  NotificationHandle mh2 = notificationHandle(&SomeClass::notify, instance);
-  CHECK(notifyResult.empty());
-  mh2(R"(["someone"])"_json);
-  CHECK(notifyResult == "Hello world: someone");
 }
 
 TEST_CASE("test incorrect params") {
   SomeClass instance;
-  MethodHandle mh = GetHandle(&SomeClass::add, instance);
+  Method mh = GetHandle(&SomeClass::add, instance);
   REQUIRE_THROWS_WITH(mh(R"(["3", "4"])"_json), "-32602: invalid parameter: must be integer, but is string, data: 0");
   REQUIRE_THROWS_WITH(mh(R"([true, true])"_json), "-32602: invalid parameter: must be integer, but is boolean, data: 0");
   REQUIRE_THROWS_WITH(mh(R"([null, 3])"_json), "-32602: invalid parameter: must be integer, but is null, data: 0");
@@ -76,7 +64,7 @@ TEST_CASE("test incorrect params") {
   REQUIRE_THROWS_WITH(mh(R"([5, 6, 5])"_json), "-32602: invalid parameter: expected 2 argument(s), but found 3");
 
   notifyResult = "";
-  NotificationHandle mh2 = GetHandle(&SomeClass::notify, instance);
+  Notification mh2 = GetHandle(&SomeClass::notify, instance);
   REQUIRE_THROWS_WITH(mh2(R"([33])"_json), "-32602: invalid parameter: must be string, but is unsigned integer, data: 0");
   REQUIRE_THROWS_WITH(mh2(R"([-33])"_json), "-32602: invalid parameter: must be string, but is integer, data: 0");
   REQUIRE_THROWS_WITH(mh2(R"(["someone", "anotherone"])"_json), "-32602: invalid parameter: expected 1 argument(s), but found 2");
@@ -125,7 +113,7 @@ product get_product(int id) {
 }
 
 TEST_CASE("test with custom struct return") {
-  MethodHandle mh = GetHandle(&get_product);
+  Method mh = GetHandle(&get_product);
   nlohmann::json j = mh(R"([1])"_json);
   CHECK(j["id"] == 1);
   CHECK(j["name"] == "some product");
@@ -163,14 +151,14 @@ std::string enumToString(const category& category) {
 }
 
 TEST_CASE("test with enum as top level parameter") {
-  MethodHandle  mh = GetHandle(&enumToString);
+  Method  mh = GetHandle(&enumToString);
 
   nlohmann::json params = R"(["cc"])"_json;
   CHECK(mh(params) == "cash&carry");
 }
 
 TEST_CASE("test with custom params") {
-  MethodHandle mh = GetHandle(&add_products);
+  Method mh = GetHandle(&add_products);
   catalog.clear();
   nlohmann::json params =
       R"([[{"id": 1, "price": 22.50, "name": "some product", "category": "order"}, {"id": 2, "price": 55.50, "name": "some product 2", "category": "cc"}]])"_json;
@@ -196,7 +184,7 @@ unsigned long unsigned_add2(unsigned short a, short b) { return a + b; }
 float float_add(float a, float b) { return a+b; }
 
 TEST_CASE("test number range checking") {
-  MethodHandle mh = GetHandle(&unsigned_add);
+  Method mh = GetHandle(&unsigned_add);
 
   REQUIRE_THROWS_WITH(mh(R"([-3,3])"_json), "-32602: invalid parameter: must be unsigned integer, but is integer, data: 0");
   REQUIRE_THROWS_WITH(mh(R"([null,3])"_json), "-32602: invalid parameter: must be unsigned integer, but is null, data: 0");
@@ -206,7 +194,7 @@ TEST_CASE("test number range checking") {
   CHECK(mh({max_us, max_s}) == max_us + max_s);
   REQUIRE_THROWS_WITH(mh({max_us, max_us}), "-32602: invalid parameter: exceeds value range of integer, data: 1");
 
-  MethodHandle mh2 = GetHandle(&unsigned_add2);
+  Method mh2 = GetHandle(&unsigned_add2);
   unsigned short max_su = std::numeric_limits<unsigned short>::max();
   unsigned short max_ss = std::numeric_limits<short>::max();
   CHECK(mh2({max_su, max_ss}) == max_su + max_ss);
@@ -214,7 +202,7 @@ TEST_CASE("test number range checking") {
 }
 
 TEST_CASE("test auto conversion of float to int passed to float method") {
-  MethodHandle mh = GetHandle(&float_add);
+  Method mh = GetHandle(&float_add);
   CHECK(mh(R"([3,3])"_json) == 6.0);
   CHECK(mh(R"([3.0,3.0])"_json) == 6.0);
   CHECK(mh(R"([3.1,3.2])"_json) == doctest::Approx(6.3));
@@ -226,15 +214,4 @@ nlohmann::json arbitrary_json(const nlohmann::json& value) {
 
 void arbitrary_json_notification(const nlohmann::json& value) {
   to_string(value);
-}
-
-TEST_CASE("test json method handles without specific types") {
-  MethodHandle mh = GetUncheckedHandle(&arbitrary_json);
-  CHECK(mh(R"([3,"string"])"_json) == R"([3,"string"])"_json);
-  auto param = R"({"a": "string"})"_json;
-  CHECK(mh(param) == param);
-
-  NotificationHandle nh = GetUncheckedNotificationHandle(&arbitrary_json_notification);
-  nh(R"([3,"string"])"_json);
-  nh(R"({"3": "string"})"_json);
 }

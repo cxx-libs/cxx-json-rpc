@@ -15,16 +15,21 @@ public:
 #pragma GCC diagnostic pop
   ~JsonRpcServer() noexcept = default;
 
-  bool Add(const std::string &name, MethodHandle callback, const NamedParamMapping &mapping = {})
+  bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping = {})
   {
     if(name.rfind("rpc.", 0) == 0) return false;
-    return m_dispatcher.Add(name, callback, mapping);
+    return m_dispatcher.Add(name, std::move(callback), mapping);
   }
     
-  bool Add(const std::string &name, NotificationHandle callback, const NamedParamMapping &mapping = {})
+  bool Add(const std::string &name,Notification callback, const NamedParamMapping &mapping = {})
   {
     if(name.rfind("rpc.", 0) == 0) return false;
-    return m_dispatcher.Add(name, callback, mapping);
+    return m_dispatcher.Add(name, std::move(callback), mapping);
+  }
+
+  nlohmann::json getMethodList()
+  {
+    return m_dispatcher.listMethods();
   }
 
   std::string HandleRequest(const std::string &requestString)

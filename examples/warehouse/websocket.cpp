@@ -80,6 +80,8 @@ int main()
   rpcServer.Add("AllProducts", GetHandle(&WarehouseServer::AllProducts, app), {});
   rpcServer.Add("Notify", GetHandle(&WarehouseServer::Notify, app), {"a","b"});
 
+  std::cout<<rpcServer.getMethodList().dump(2)<<std::endl;
+
   cout << "Running websocket example" << "\n";
   WebsocketServer WebsocketServer(rpcServer,"127.0.0.1", 8888);
   cout << "Starting websocket server: " << std::boolalpha << WebsocketServer.start() << "\n";

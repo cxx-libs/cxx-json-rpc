@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include <typeinfo>
 
 
 #include <type_traits>
@@ -33,8 +34,138 @@ namespace std
 namespace jsonrpc
 {
 
-typedef std::function<nlohmann::json(const nlohmann::json &)> MethodHandle;
-typedef std::function<void(const nlohmann::json &)> NotificationHandle;
+template<typename T> constexpr auto cpp_type_name() noexcept
+{
+#if defined(__clang__)
+  constexpr std::string_view name{__PRETTY_FUNCTION__};
+  constexpr std::string_view prefix{"[T = "};
+  constexpr std::string_view suffix{"]"};
+#elif defined(__GNUC__)
+  constexpr std::string_view name{__PRETTY_FUNCTION__};
+  constexpr std::string_view prefix{"[with T = "};
+  constexpr std::string_view suffix{"]"};
+#elif defined(_MSC_VER)
+  constexpr std::string_view name{__FUNCSIG__};
+  constexpr std::string_view prefix{"cpp_type_name<"};
+  constexpr std::string_view suffix{">(void)"};
+#endif
+  constexpr std::size_t beg{name.find(prefix)};
+  constexpr std::size_t end{name.find(suffix)};
+  return name.substr(beg+prefix.size(),end - (beg + prefix.size()));
+}
+
+
+
+    // -------------------- Type name mapping --------------------
+    [[nodiscard]] constexpr std::string_view type_name(const nlohmann::json::value_t& t) noexcept
+    {
+      switch (t)
+      {
+        case nlohmann::json::value_t::null:              return "null";
+        case nlohmann::json::value_t::object:            return "object";
+        case nlohmann::json::value_t::array:             return "array";
+        case nlohmann::json::value_t::string:            return "string";
+        case nlohmann::json::value_t::boolean:           return "boolean";
+        case nlohmann::json::value_t::number_integer:    return "integer";
+        case nlohmann::json::value_t::number_unsigned:   return "unsigned integer";
+        case nlohmann::json::value_t::number_float:      return "float";
+        case nlohmann::json::value_t::discarded:         return "discarded";
+        default:                                         return "unknown";
+      }
+    }
+
+
+
+class param_t
+{
+public:
+  param_t() = default;
+  param_t(std::string_view cppType, nlohmann::json::value_t jt) : cpp_type(std::move(cppType)), json_type(jt) {}
+  std::string getType() const noexcept { return cpp_type; }
+  std::string getJSONType() const noexcept { return std::string(type_name(json_type)); }
+
+private:
+  std::string cpp_type;
+  nlohmann::json::value_t json_type;
+};
+
+class Method
+{
+public:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+  Method(const Method&) = delete;
+  Method& operator=(const Method&) = delete;
+  Method(Method&&) = default;
+  Method& operator=(Method&&) = default;
+  Method(std::function<nlohmann::json(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_method(std::move(f)) , m_params(std::move(params))
+  {
+    //m_params.reserve(arity);
+  }
+#pragma GCC diagnostic pop
+  nlohmann::json operator()(const nlohmann::json & request) const
+  { 
+    testParameters(request.size());
+    return m_method(request);
+  }
+  void setParameterNames(const std::vector<std::string>& names)
+  {
+    m_names = names;
+  }
+  std::size_t arity() const noexcept { return m_params.size(); }
+  std::vector<param_t> getParameters() const noexcept { return m_params; }
+  const std::vector<std::string> getNames()
+  {
+    return m_names;
+  }
+private:
+
+
+
+  void testParameters(const std::size_t json_params_size) const
+  {
+    if(json_params_size != m_params.size()) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(m_params.size()) + " argument(s), but found " + std::to_string(json_params_size));
+  }
+  std::function<nlohmann::json(const nlohmann::json &)> m_method;
+  const std::vector<param_t> m_params;
+  std::vector<std::string> m_names;
+};
+
+class Notification
+{
+public:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+  Notification(std::function<void(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_notif(std::move(f)) , m_params(std::move(params)){}
+  Notification(const Method&) = delete;
+  Notification& operator=(const Method&) = delete;
+  Notification(Notification&&) = default;
+  Notification& operator=(Notification&&) = default;
+#pragma GCC diagnostic pop
+  void operator()(const nlohmann::json & request) const
+  { 
+    testParameters(request.size());
+    m_notif(request);
+  }
+  std::size_t arity() const noexcept { return m_params.size(); }
+  std::vector<param_t> getParameters() const noexcept { return m_params; }
+  void setParameterNames(const std::vector<std::string>& names)
+  {
+    m_names = names;
+  }
+  const std::vector<std::string> getNames()
+  {
+    return m_names;
+  }
+private:
+  void testParameters(const std::size_t json_params_size) const
+  {
+    if(json_params_size != m_params.size()) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(m_params.size()) + " argument(s), but found " + std::to_string(json_params_size));
+  }
+  std::function<void(const nlohmann::json &)> m_notif;
+  const std::vector<param_t> m_params;
+  std::vector<std::string> m_names;
+};
 
 // ================== Compile-time type mapping ==================
 template<typename T, typename Enable = void> struct type_mapper { static constexpr nlohmann::json::value_t value = nlohmann::json::value_t::object; };
@@ -67,24 +198,6 @@ template<typename T> struct type_mapper<std::unordered_set<T>> { static constexp
 // -------------------- Map containers --------------------
 template<typename K, typename V> struct type_mapper<std::map<K, V>> { static constexpr nlohmann::json::value_t value = nlohmann::json::value_t::object; };
 template<typename K, typename V> struct type_mapper<std::unordered_map<K, V>> { static constexpr nlohmann::json::value_t value = nlohmann::json::value_t::object; };
-
-// -------------------- Type name mapping --------------------
-[[nodiscard]] constexpr std::string_view type_name(const nlohmann::json::value_t& t) noexcept
-{
-  switch (t)
-  {
-    case nlohmann::json::value_t::null:              return "null";
-    case nlohmann::json::value_t::object:            return "object";
-    case nlohmann::json::value_t::array:             return "array";
-    case nlohmann::json::value_t::string:            return "string";
-    case nlohmann::json::value_t::boolean:           return "boolean";
-    case nlohmann::json::value_t::number_integer:    return "integer";
-    case nlohmann::json::value_t::number_unsigned:   return "unsigned integer";
-    case nlohmann::json::value_t::number_float:      return "float";
-    case nlohmann::json::value_t::discarded:         return "discarded";
-    default:                                         return "unknown";
-  }
-}
 
 // -------------------- Parameter type checking --------------------
 template<typename T> inline void check_param_type(const std::size_t index,const nlohmann::json& x,const nlohmann::json::value_t expectedType)
@@ -144,141 +257,134 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
             }
         }
     }
-
-    // -------------------- MethodHandle --------------------
-
-    template <typename ReturnType, typename... ParamTypes, std::size_t... index>
-    MethodHandle createMethodHandle(std::function<ReturnType(ParamTypes...)> method, std::index_sequence<index...>) {
-        return [method](const nlohmann::json &params) -> nlohmann::json {
-            constexpr size_t formalSize = sizeof...(ParamTypes);
-            const size_t actualSize = params.size();
-
-            if (actualSize != formalSize) {
-                throw exception(
-                    invalid_params,
-                    "invalid parameter: expected " + std::to_string(formalSize) +
-                    " argument(s), but found " + std::to_string(actualSize)
-                );
-            }
-
-            (check_param_type<std::decay_t<ParamTypes>>(index, params[index], type_mapper<std::decay_t<ParamTypes>>::value), ...);
-
-            return method(params[index].get<std::decay_t<ParamTypes>>()...);
-        };
+    
+    // ================= Free function Methods =================
+    template<typename ReturnType, typename... ParamTypes, std::size_t... I>
+    Method createMethod(std::function<ReturnType(ParamTypes...)> method, std::index_sequence<I...>)
+    {
+        std::vector<param_t> params = { param_t(cpp_type_name<ParamTypes>(), type_mapper<std::decay_t<ParamTypes>>::value)... };
+        return Method([method](const nlohmann::json &params) -> nlohmann::json {
+            
+            // Check parameter types
+            (check_param_type<std::decay_t<ParamTypes>>(I, params[I], type_mapper<std::decay_t<ParamTypes>>::value), ...);
+    
+            // Call function
+            return method(params[I].get<std::decay_t<ParamTypes>>()...);
+        },std::move(params));
     }
-
-    template <typename ReturnType, typename... ParamTypes>
-    MethodHandle methodHandle(std::function<ReturnType(ParamTypes...)> method) {
-        return createMethodHandle(method, std::index_sequence_for<ParamTypes...>{});
+    
+    template<typename ReturnType, typename... ParamTypes>
+    Method GetHandle(std::function<ReturnType(ParamTypes...)> f)
+    {
+        return createMethod(f, std::index_sequence_for<ParamTypes...>{});
     }
-
-    template <typename ReturnType, typename... ParamTypes>
-    MethodHandle GetHandle(std::function<ReturnType(ParamTypes...)> f) {
-        return methodHandle(f);
+    
+    template<typename ReturnType, typename... ParamTypes>
+    Method GetHandle(ReturnType (*f)(ParamTypes...))
+    {
+        return createMethod(std::function<ReturnType(ParamTypes...)>(f), std::index_sequence_for<ParamTypes...>{});
     }
+    
+    // ================= Member function Methods (non-const) =================
+    template<typename T, typename ReturnType, typename... ParamTypes, std::size_t... I>
+    Method createMethod(ReturnType (T::*method)(ParamTypes...), T &instance, std::index_sequence<I...>)
+    {
+        std::vector<param_t> params = { param_t(cpp_type_name<ParamTypes>(), type_mapper<std::decay_t<ParamTypes>>::value)... };
+        return Method([&instance, method](const nlohmann::json &params) -> nlohmann::json {
 
-    template <typename ReturnType, typename... ParamTypes>
-    MethodHandle GetHandle(ReturnType (*f)(ParamTypes...)) {
-        return GetHandle(std::function<ReturnType(ParamTypes...)>(f));
+            (check_param_type<std::decay_t<ParamTypes>>(I, params[I], type_mapper<std::decay_t<ParamTypes>>::value), ...);
+    
+            return (instance.*method)(params[I].get<std::decay_t<ParamTypes>>()...);
+        },std::move(params));
     }
-
-    inline MethodHandle GetUncheckedHandle(std::function<nlohmann::json(const nlohmann::json&)> f) {
-        return [f](const nlohmann::json &params) -> nlohmann::json { return f(params); };
-    }
-
-// -------------------- NotificationHandle --------------------
-template<typename... ParamTypes, std::size_t... index> NotificationHandle createNotificationHandle(std::function<void(ParamTypes...)> method, std::index_sequence<index...>)
-{
-  return [method](const nlohmann::json& params) -> void 
-  {
-    constexpr std::size_t formalSize{sizeof...(ParamTypes)};
-    const std::size_t actualSize{params.size()};
-    if(actualSize != formalSize) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(formalSize) + " argument(s), but found " + std::to_string(actualSize));
-    (check_param_type<std::decay_t<ParamTypes>>(index, params[index], type_mapper<std::decay_t<ParamTypes>>::value), ...);
-    method(params[index].get<std::decay_t<ParamTypes>>()...);
-  };
-}
-
-template<typename... ParamTypes> NotificationHandle notificationHandle(std::function<void(ParamTypes...)> method)
-{
-  return createNotificationHandle(method, std::index_sequence_for<ParamTypes...>{});
-}
-
-template<typename... ParamTypes> NotificationHandle GetHandle(std::function<void(ParamTypes...)> f) { return notificationHandle(f); }
-
-template<typename... ParamTypes> NotificationHandle GetHandle(void (*f)(ParamTypes...)) { return GetHandle(std::function<void(ParamTypes...)>(f)); }
-
-inline NotificationHandle GetUncheckedNotificationHandle(std::function<void(const nlohmann::json&)> f) { return [f](const nlohmann::json &params) -> void { f(params); }; }
-
-// -------------------- Member methods --------------------
-template<typename T, typename ReturnType, typename... ParamTypes> MethodHandle methodHandle(ReturnType (T::*method)(ParamTypes...), T &instance)
-{
-  auto function = [&instance, method](ParamTypes &&... params) -> ReturnType
-  {
-    return (instance.*method)(std::forward<ParamTypes>(params)...);
-  };
-  return methodHandle(std::function<ReturnType(ParamTypes...)>(function));
-}
-
-template<typename T, typename... ParamTypes> NotificationHandle notificationHandle(void (T::*method)(ParamTypes...), T &instance)
-{
-  auto function = [&instance, method](ParamTypes &&... params) -> void 
-  {
-    (instance.*method)(std::forward<ParamTypes>(params)...);
-  };
-  return notificationHandle(std::function<void(ParamTypes...)>(function));
-}
-
-template<typename T, typename ReturnType, typename... ParamTypes> MethodHandle GetHandle(ReturnType (T::*method)(ParamTypes...), T &instance)
-{
-  auto function = [&instance, method](ParamTypes &&... params) -> ReturnType 
-  {
-    return (instance.*method)(std::forward<ParamTypes>(params)...);
-  };
-  return GetHandle(std::function<ReturnType(ParamTypes...)>(function));
-}
-
-template<typename T, typename... ParamTypes> NotificationHandle GetHandle(void (T::*method)(ParamTypes...), T &instance)
-{
-  auto function = [&instance, method](ParamTypes &&... params) -> void
-  {
-    (instance.*method)(std::forward<ParamTypes>(params)...);
-  };
-  return GetHandle(std::function<void(ParamTypes...)>(function));
-}
-
-// -------------------- Const member methods --------------------
-
+    
     template<typename T, typename ReturnType, typename... ParamTypes>
-    MethodHandle GetHandle(ReturnType (T::*method)(ParamTypes...) const, const T &instance) {
-        auto function = [&instance, method](ParamTypes &&... params) -> ReturnType {
-            return (instance.*method)(std::forward<ParamTypes>(params)...);
-        };
-        return GetHandle(std::function<ReturnType(ParamTypes...)>(function));
+    Method GetHandle(ReturnType (T::*method)(ParamTypes...), T &instance)
+    {
+        return createMethod(method, instance, std::index_sequence_for<ParamTypes...>{});
     }
+    
+    // ================= Member function Methods (const) =================
+    template<typename T, typename ReturnType, typename... ParamTypes, std::size_t... I>
+    Method createMethod(ReturnType (T::*method)(ParamTypes...) const, const T &instance, std::index_sequence<I...>)
+    {
+        std::vector<param_t> params = { param_t(cpp_type_name<ParamTypes>(), type_mapper<std::decay_t<ParamTypes>>::value)... };
+        return Method([&instance, method](const nlohmann::json &params) -> nlohmann::json {
 
+            (check_param_type<std::decay_t<ParamTypes>>(I, params[I], type_mapper<std::decay_t<ParamTypes>>::value), ...);
+    
+            return (instance.*method)(params[I].get<std::decay_t<ParamTypes>>()...);
+        },std::move(params));
+    }
+    
+    template<typename T, typename ReturnType, typename... ParamTypes>
+    Method GetHandle(ReturnType (T::*method)(ParamTypes...) const, const T &instance)
+    {
+        return createMethod(method, instance, std::index_sequence_for<ParamTypes...>{});
+    }
+    
+    // ================= Free function Notifications =================
+    template<typename... ParamTypes, std::size_t... I>
+    Notification createNotification(std::function<void(ParamTypes...)> method, std::index_sequence<I...>)
+    {
+        std::vector<param_t> params = { param_t(cpp_type_name<ParamTypes>(), type_mapper<std::decay_t<ParamTypes>>::value)... };
+        return Notification([method](const nlohmann::json &params) {
+
+            (check_param_type<std::decay_t<ParamTypes>>(I, params[I], type_mapper<std::decay_t<ParamTypes>>::value), ...);
+    
+            method(params[I].get<std::decay_t<ParamTypes>>()...);
+        },std::move(params));
+    }
+    
+    template<typename... ParamTypes>
+    Notification GetHandle(std::function<void(ParamTypes...)> f)
+    {
+        return createNotification(f, std::index_sequence_for<ParamTypes...>{});
+    }
+    
+    template<typename... ParamTypes>
+    Notification GetHandle(void (*f)(ParamTypes...))
+    {
+        return createNotification(std::function<void(ParamTypes...)>(f), std::index_sequence_for<ParamTypes...>{});
+    }
+    
+    // ================= Member function Notifications (non-const) =================
+    template<typename T, typename... ParamTypes, std::size_t... I>
+    Notification createNotification(void (T::*method)(ParamTypes...), T &instance, std::index_sequence<I...>)
+    {
+        std::vector<param_t> params = { param_t(cpp_type_name<ParamTypes>(), type_mapper<std::decay_t<ParamTypes>>::value)... };
+        return Notification([&instance, method](const nlohmann::json &params) {
+    
+            (check_param_type<std::decay_t<ParamTypes>>(I, params[I], type_mapper<std::decay_t<ParamTypes>>::value), ...);
+    
+            (instance.*method)(params[I].get<std::decay_t<ParamTypes>>()...);
+        },std::move(params));
+    }
+    
     template<typename T, typename... ParamTypes>
-    NotificationHandle GetHandle(void (T::*method)(ParamTypes...) const, const T &instance) {
-        auto function = [&instance, method](ParamTypes &&... params) -> void {
-            (instance.*method)(std::forward<ParamTypes>(params)...);
-        };
-        return GetHandle(std::function<void(ParamTypes...)>(function));
+    Notification GetHandle(void (T::*method)(ParamTypes...), T &instance)
+    {
+        return createNotification(method, instance, std::index_sequence_for<ParamTypes...>{});
     }
+    
+    // ================= Member function Notifications (const) =================
+    template<typename T, typename... ParamTypes, std::size_t... I>
+    Notification createNotification(void (T::*method)(ParamTypes...) const, const T &instance, std::index_sequence<I...>)
+    {
 
-    template <typename T, typename ReturnType, typename... ParamTypes>
-    MethodHandle methodHandle(ReturnType (T::*method)(ParamTypes...) const, const T &instance) {
-        auto function = [&instance, method](ParamTypes &&... params) -> ReturnType {
-            return (instance.*method)(std::forward<ParamTypes>(params)...);
-        };
-        return methodHandle(std::function<ReturnType(ParamTypes...)>(function));
+        std::vector<param_t> params = { param_t(cpp_type_name<ParamTypes>(), type_mapper<std::decay_t<ParamTypes>>::value)... };
+        return Notification([&instance, method](const nlohmann::json &params) {
+    
+            (check_param_type<std::decay_t<ParamTypes>>(I, params[I], type_mapper<std::decay_t<ParamTypes>>::value), ...);
+    
+            (instance.*method)(params[I].get<std::decay_t<ParamTypes>>()...);
+        },std::move(params));
     }
-
-    template <typename T, typename... ParamTypes>
-    NotificationHandle notificationHandle(void (T::*method)(ParamTypes...) const, const T &instance) {
-        auto function = [&instance, method](ParamTypes &&... params) -> void {
-            (instance.*method)(std::forward<ParamTypes>(params)...);
-        };
-        return notificationHandle(std::function<void(ParamTypes...)>(function));
+    
+    template<typename T, typename... ParamTypes>
+    Notification GetHandle(void (T::*method)(ParamTypes...) const, const T &instance)
+    {
+        return createNotification(method, instance, std::index_sequence_for<ParamTypes...>{});
     }
 
 } // namespace json

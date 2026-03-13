@@ -2,7 +2,6 @@
 #include "testclientconnector.hpp"
 #include <jsonrpccxx/client.hpp>
 
-using namespace std;
 using namespace jsonrpc;
 
 struct F
