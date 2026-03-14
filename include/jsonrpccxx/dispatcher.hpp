@@ -23,16 +23,16 @@ public:
   bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping = {})
   {
     if(contains(name)) return false;
+    callback.setParameterNames(mapping);
     methods.try_emplace(name,std::make_unique<Method>(std::move(callback)));
-    methods[name]->setParameterNames(mapping);
     return true;
   }
 
   bool Add(const std::string &name,Notification callback, const NamedParamMapping &mapping = {})
   {
     if(contains(name)) return false;
+    callback.setParameterNames(mapping);
     notifications.try_emplace(name,std::make_unique<Notification>(std::move(callback)));
-    notifications[name]->setParameterNames(mapping);
     return true;
   }
 
@@ -57,25 +57,24 @@ public:
     nlohmann::json json = nlohmann::json::array();
     for (const auto& [name, methodPtr] : methods)
     {
-        nlohmann::json j;
-        j["name"] = name;
-        j["params"] = nlohmann::json::array();
-        for (const auto& param : methodPtr->getParameters())
-        {
-            nlohmann::json p;
-            p["cpp_type"] = param.getType();
-            p["json_type"] = param.getJSONType();
-            j["params"].push_back(p);
-        }
-        j["names"] = methodPtr->getNames();
-        json.push_back(j);
+      nlohmann::json j;
+      j["name"] = name;
+      j["params"] = nlohmann::json::array();
+      for(const auto& param : methodPtr->getParameters())
+      {
+        nlohmann::json p;
+        p["cpp_type"] = param.getType();
+        p["json_type"] = param.getJSONType();
+        j["params"].push_back(p);
+      }
+      j["names"] = methodPtr->getNames();
+      json.push_back(j);
     }
     return json;
   }
 private:
   std::unordered_map<std::string, std::unique_ptr<Method>> methods;
   std::unordered_map<std::string, std::unique_ptr<Notification>> notifications;
-
 };
 
 } // namespace jsonrpc

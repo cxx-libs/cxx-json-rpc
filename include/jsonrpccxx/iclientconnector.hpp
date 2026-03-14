@@ -15,7 +15,6 @@ namespace jsonrpc
 
 using id_t =  std::variant<std::int64_t, std::string>;
 
-
 class IClientConnector
 {
 public:
@@ -64,7 +63,6 @@ public:
 protected:
   virtual std::string SendAndReceive(const std::string_view request) = 0;
 };
-
 
 class IAsyncClientConnector : public IClientConnector
 {
@@ -136,8 +134,7 @@ protected:
 private:
   std::mutex mtx_;
   std::unordered_map<id_t, std::promise<std::string>> promises_;
-  bool m_async;
-};
 
+};
 
 }

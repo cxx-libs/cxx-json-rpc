@@ -34,7 +34,6 @@ public:
   {
     try
     {
-      
       nlohmann::json response = nlohmann::json::parse(connector.SendRequest(request.Build().dump()));
       if(!response.is_array()) throw exception(parse_error, "invalid JSON response from server: expected array");
       return BatchResponse(std::move(response));
@@ -44,7 +43,6 @@ public:
       throw exception(parse_error, std::string("invalid JSON response from server: ") + e.what());
     }
   }
-
 
 protected:
   IClientConnector& connector;
@@ -87,6 +85,7 @@ private:
     else if(params.is_array()) j["params"] = params;
     connector.SendRequest(j.dump());
   }
+
 };
 
 } // namespace jsonrpc

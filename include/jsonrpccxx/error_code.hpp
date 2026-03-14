@@ -3,8 +3,8 @@
 namespace jsonrpc
 {
 
-
-enum error_type {
+enum error_type
+{
   parse_error = -32700,
   invalid_request = -32600,
   method_not_found = -32601,
@@ -14,6 +14,5 @@ enum error_type {
   timeout = -32001,
   invalid
 };
-
 
 }
