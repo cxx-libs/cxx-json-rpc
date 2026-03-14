@@ -14,10 +14,14 @@ using NamedParamMapping = std::vector<std::string>;
 class Dispatcher
 {
 public:
+#if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   explicit Dispatcher() = default;
+#if !defined(_WIN32)
 #pragma GCC diagnostic pop
+#endif
   ~Dispatcher() noexcept = default;
 
   bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping = {})

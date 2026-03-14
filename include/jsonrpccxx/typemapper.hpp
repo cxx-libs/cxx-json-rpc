@@ -21,6 +21,7 @@
 #include<set>
 #include <unordered_map>
 #include <unordered_set>
+#include <tuple>
 
 namespace std
 {
@@ -28,7 +29,6 @@ namespace std
   template<typename T, typename Alloc> class vector;
   template<typename T, std::size_t N> class array;
   template <typename Key, typename T, typename Compare, typename Alloc> class map;
-  template <typename... Ts> struct tuple;
 }
 
 namespace jsonrpc
@@ -88,14 +88,18 @@ private:
 class Method
 {
 public:
+#if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   Method(const Method&) = delete;
   Method& operator=(const Method&) = delete;
   Method(Method&&) = default;
   Method& operator=(Method&&) = default;
   Method(std::function<nlohmann::json(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_method(std::move(f)) , m_params(std::move(params)){}
+#if !defined(_WIN32)
 #pragma GCC diagnostic pop
+#endif
   nlohmann::json operator()(const nlohmann::json & request) const
   { 
     try
@@ -162,14 +166,18 @@ private:
 class Notification
 {
 public:
+#if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   Notification(std::function<void(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_notif(std::move(f)) , m_params(std::move(params)){}
   Notification(const Method&) = delete;
   Notification& operator=(const Method&) = delete;
   Notification(Notification&&) = default;
   Notification& operator=(Notification&&) = default;
+#if !defined(_WIN32)
 #pragma GCC diagnostic pop
+#endif
   void operator()(const nlohmann::json & request) const
   { 
     try 
@@ -279,13 +287,13 @@ template<typename T> inline void check_param_type(const std::size_t index,const 
     // Handle signed expectation but JSON is unsigned
     else if(expectedType == nlohmann::json::value_t::number_integer && x.type() == nlohmann::json::value_t::number_unsigned)
     {
-      if(x.get<unsigned long long>() > static_cast<unsigned long long>(std::numeric_limits<T>::max())) throw exception(invalid_params,"invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),std::to_string(index));
+      if(x.get<unsigned long long>() > static_cast<unsigned long long>((std::numeric_limits<T>::max)())) throw exception(invalid_params,"invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),std::to_string(index));
     }
     // Handle float expectation but JSON is integer or unsigned
     else if(expectedType == nlohmann::json::value_t::number_float &&(x.type() == nlohmann::json::value_t::number_integer || x.type() == nlohmann::json::value_t::number_unsigned))
     {
       double val = x.get<double>();
-      if(val > std::numeric_limits<T>::max() || val < std::numeric_limits<T>::lowest()) throw exception(invalid_params,"invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),std::to_string(index));
+      if(val > (std::numeric_limits<T>::max)() || val < std::numeric_limits<T>::lowest()) throw exception(invalid_params,"invalid parameter: exceeds value range of " + std::string(type_name(expectedType)),std::to_string(index));
     }
     // Type mismatch
     else if(x.type() != expectedType) throw exception(invalid_params,"invalid parameter: must be " + std::string(type_name(expectedType)) +", but is " + std::string(type_name(x.type())),std::to_string(index));

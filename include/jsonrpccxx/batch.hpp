@@ -65,8 +65,10 @@ private:
 class BatchResponse
 {
 public:
+#if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   explicit BatchResponse(nlohmann::json &&response) : response(response)
   {
     for(auto &[key, value] : response.items())
@@ -84,7 +86,9 @@ public:
       else nullIds.push_back(std::stoi(key));
     }
   }
+#if !defined(_WIN32)
 #pragma GCC diagnostic pop
+#endif
 
 
   template<typename T> T Get(const id_t& id)

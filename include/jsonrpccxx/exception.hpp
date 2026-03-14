@@ -7,11 +7,15 @@ namespace jsonrpc
 {
   class exception : public std::exception {
   public:
+#if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   exception(int code, const std::string &message) noexcept : code(code), message(message), err(std::to_string(code) + ": " + message) {}
   exception(int code, const std::string &message, const std::string & data) noexcept : code(code), message(message), data(data), err(std::to_string(code) + ": " + message + ", data: " + data) {}
+#if !defined(_WIN32)
 #pragma GCC diagnostic pop
+#endif
 
   error_type Type() const
   {

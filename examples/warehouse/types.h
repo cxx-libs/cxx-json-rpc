@@ -6,10 +6,14 @@ enum class category { order, cash_carry };
 struct Product
 {
 public:
+#if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   explicit Product() noexcept = default;
+#if !defined(_WIN32)
 #pragma GCC diagnostic pop
+#endif
   std::string id;
   double price{0.};
   std::string name;
