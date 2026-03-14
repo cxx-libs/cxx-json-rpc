@@ -102,7 +102,14 @@ public:
 #pragma GCC diagnostic pop
   nlohmann::json operator()(const nlohmann::json & request) const
   { 
-    return m_method(normalize_parameter(request));
+    try
+    {
+        return m_method(normalize_parameter(request));
+    }
+    catch(const exception& e)
+    {
+       throw process_type_error(e);
+    }
   }
   void setParameterNames(const std::vector<std::string>& names)
   {
@@ -113,6 +120,17 @@ public:
   const std::vector<std::string> getNames()
   {
     return m_names;
+  }
+  exception process_type_error(const exception &e) const
+  {
+    if(e.Code() == invalid_params && !e.Data().empty())
+    {
+      std::string message = e.Message() + " for parameter ";
+      if(!m_names.empty()) message += "\"" + m_names[std::stoi(e.Data())] + "\"";
+      else message += e.Data();
+      return exception(e.Code(), message);
+    }
+    else return e;
   }
 private:
   nlohmann::json normalize_parameter(const nlohmann::json &params) const
@@ -160,7 +178,15 @@ public:
 #pragma GCC diagnostic pop
   void operator()(const nlohmann::json & request) const
   { 
-    m_notif(normalize_parameter(request));
+    try 
+    {
+        m_notif(normalize_parameter(request));
+    }
+    catch(const exception& e)
+    {
+      throw  process_type_error(e);
+    }
+    
   }
   std::size_t arity() const noexcept { return m_params.size(); }
   std::vector<param_t> getParameters() const noexcept { return m_params; }
@@ -171,6 +197,17 @@ public:
   const std::vector<std::string> getNames()
   {
     return m_names;
+  }
+  exception process_type_error(const exception &e) const
+  {
+    if(e.Code() == invalid_params && !e.Data().empty())
+    {
+      std::string message = e.Message() + " for parameter ";
+      if(!m_names.empty()) message += "\"" + m_names[std::stoi(e.Data())] + "\"";
+      else message += e.Data();
+      return exception(e.Code(), message);
+    }
+    else return e;
   }
 private:
 nlohmann::json normalize_parameter(const nlohmann::json &params) const

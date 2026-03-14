@@ -25,7 +25,6 @@ public:
     if(contains(name)) return false;
     methods.try_emplace(name,std::make_unique<Method>(std::move(callback)));
     methods[name]->setParameterNames(mapping);
-    if(!mapping.empty()) this->mapping[name] = mapping;
     return true;
   }
 
@@ -34,49 +33,21 @@ public:
     if(contains(name)) return false;
     notifications.try_emplace(name,std::make_unique<Notification>(std::move(callback)));
     notifications[name]->setParameterNames(mapping);
-    if(!mapping.empty()) this->mapping[name] = mapping;
     return true;
-  }
-
-  exception process_type_error(const std::string& name,const exception &e) const
-  {
-    if(e.Code() == invalid_params && !e.Data().empty())
-    {
-      std::string message = e.Message() + " for parameter ";
-      const auto found = mapping.find(name);
-      if(found != mapping.end()) message += "\"" + found->second[std::stoi(e.Data())] + "\"";
-      else message += e.Data();
-      return exception(e.Code(), message);
-    }
-    else return e;
   }
 
   nlohmann::json InvokeMethod(const std::string &name, const nlohmann::json &params) const
   {
     auto method = methods.find(name);
     if(method == methods.end()) throw exception(method_not_found, "method not found: " + name);
-    try
-    {
-      return method->second.get()->operator()(params);
-    }
-    catch(const exception &e)
-    {
-      throw process_type_error(name, e);
-    }
+    return method->second.get()->operator()(params);
   }
 
   void InvokeNotification(const std::string &name, const nlohmann::json &params) const
   {
     auto notification = notifications.find(name);
     if(notification == notifications.end()) throw exception(method_not_found, "notification not found: " + name);
-    try
-    {
-      return notification->second.get()->operator()(params);
-    }
-    catch(const exception &e)
-    {
-      throw process_type_error(name, e);
-    }
+    return notification->second.get()->operator()(params);
   }
 
   inline bool contains(const std::string& name) const noexcept { return (methods.find(name) != methods.end() || notifications.find(name) != notifications.end()); }
@@ -104,9 +75,6 @@ public:
 private:
   std::unordered_map<std::string, std::unique_ptr<Method>> methods;
   std::unordered_map<std::string, std::unique_ptr<Notification>> notifications;
-  std::unordered_map<std::string, NamedParamMapping> mapping;
-
-
 
 };
 
