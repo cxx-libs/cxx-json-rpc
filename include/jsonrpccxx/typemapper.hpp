@@ -98,15 +98,11 @@ public:
   Method& operator=(const Method&) = delete;
   Method(Method&&) = default;
   Method& operator=(Method&&) = default;
-  Method(std::function<nlohmann::json(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_method(std::move(f)) , m_params(std::move(params))
-  {
-    //m_params.reserve(arity);
-  }
+  Method(std::function<nlohmann::json(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_method(std::move(f)) , m_params(std::move(params)){}
 #pragma GCC diagnostic pop
   nlohmann::json operator()(const nlohmann::json & request) const
   { 
-    testParameters(request.size());
-    return m_method(request);
+    return m_method(normalize_parameter(request));
   }
   void setParameterNames(const std::vector<std::string>& names)
   {
@@ -119,7 +115,27 @@ public:
     return m_names;
   }
 private:
-
+  nlohmann::json normalize_parameter(const nlohmann::json &params) const
+  {
+    if(params.is_array())
+    {
+        testParameters(params.size());
+        return params;
+    }
+    else if(params.is_object())
+    {
+      if(m_names.empty()) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
+      nlohmann::json result;
+      for(auto const &p : m_names)
+      {
+        if(params.find(p) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p + "\"");
+        result.push_back(params[p]);
+      }
+      testParameters(params.size());
+      return result;
+    }
+    throw exception(invalid_request, "invalid request: the 'params' field must be either an array or an object.");
+  }
 
 
   void testParameters(const std::size_t json_params_size) const
@@ -144,8 +160,7 @@ public:
 #pragma GCC diagnostic pop
   void operator()(const nlohmann::json & request) const
   { 
-    testParameters(request.size());
-    m_notif(request);
+    m_notif(normalize_parameter(request));
   }
   std::size_t arity() const noexcept { return m_params.size(); }
   std::vector<param_t> getParameters() const noexcept { return m_params; }
@@ -158,6 +173,27 @@ public:
     return m_names;
   }
 private:
+nlohmann::json normalize_parameter(const nlohmann::json &params) const
+{
+  if(params.is_array())
+  {
+      testParameters(params.size());
+      return params;
+  }
+  else if(params.is_object())
+  {
+    if(m_names.empty()) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
+    nlohmann::json result;
+    for(auto const &p : m_names)
+    {
+      if(params.find(p) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p + "\"");
+      result.push_back(params[p]);
+    }
+    testParameters(params.size());
+    return result;
+  }
+  throw exception(invalid_request, "invalid request: the 'params' field must be either an array or an object.");
+}
   void testParameters(const std::size_t json_params_size) const
   {
     if(json_params_size != m_params.size()) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(m_params.size()) + " argument(s), but found " + std::to_string(json_params_size));

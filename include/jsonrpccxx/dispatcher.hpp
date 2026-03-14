@@ -57,7 +57,7 @@ public:
     if(method == methods.end()) throw exception(method_not_found, "method not found: " + name);
     try
     {
-      return method->second.get()->operator()(normalize_parameter(name, params));
+      return method->second.get()->operator()(params);
     }
     catch(const exception &e)
     {
@@ -71,7 +71,7 @@ public:
     if(notification == notifications.end()) throw exception(method_not_found, "notification not found: " + name);
     try
     {
-      return notification->second.get()->operator()(normalize_parameter(name, params));
+      return notification->second.get()->operator()(params);
     }
     catch(const exception &e)
     {
@@ -106,23 +106,7 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Notification>> notifications;
   std::unordered_map<std::string, NamedParamMapping> mapping;
 
-  inline nlohmann::json normalize_parameter(const std::string &name, const nlohmann::json &params) const
-  {
-    if(params.is_array()) return params;
-    else if(params.is_object())
-    {
-      const auto found = mapping.find(name);
-      if(found == mapping.end()) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
-      nlohmann::json result;
-      for(auto const &p : found->second)
-      {
-        if(params.find(p) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p + "\"");
-        result.push_back(params[p]);
-      }
-      return result;
-    }
-    throw exception(invalid_request, "invalid request: the 'params' field must be either an array or an object.");
-  }
+
 
 };
 
