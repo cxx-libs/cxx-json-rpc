@@ -75,12 +75,22 @@ template<typename T> constexpr auto cpp_type_name() noexcept
 class param_t
 {
 public:
+#if !defined(_WIN32)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#endif
   param_t() = default;
   param_t(std::string_view cppType, nlohmann::json::value_t jt) : cpp_type(std::move(cppType)), json_type(jt) {}
+#if !defined(_WIN32)
+#pragma GCC diagnostic pop
+#endif
   std::string getType() const noexcept { return cpp_type; }
   std::string getJSONType() const noexcept { return std::string(type_name(json_type)); }
+  std::string getName() const noexcept { return m_name; }
+  void setName(const std::string& name ) { m_name= name; } 
 
 private:
+  std::string m_name;
   std::string cpp_type;
   nlohmann::json::value_t json_type;
 };
@@ -113,21 +123,21 @@ public:
   }
   void setParameterNames(const std::vector<std::string>& names)
   {
-    m_names = names;
+    if(!names.empty()) m_isnamed = true;
+    for(std::size_t i =0 ;i!= names.size(); ++i)
+    {
+        m_params[i].setName(names[i]);
+    }
   }
   std::size_t arity() const noexcept { return m_params.size(); }
   std::vector<param_t> getParameters() const noexcept { return m_params; }
-  const std::vector<std::string> getNames()
-  {
-    return m_names;
-  }
 private:
   exception process_type_error(const exception &e) const
   {
     if(e.Code() == invalid_params && !e.Data().empty())
     {
       std::string message = e.Message() + " for parameter ";
-      if(!m_names.empty()) message += "\"" + m_names[std::stoi(e.Data())] + "\"";
+      if(!m_params[std::stoi(e.Data())].getName().empty()) message += "\"" + m_params[std::stoi(e.Data())].getName() + "\"";
       else message += e.Data();
       return exception(e.Code(), message);
     }
@@ -142,12 +152,12 @@ private:
     }
     else if(params.is_object())
     {
-      if(m_names.empty()) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
+      if(!m_isnamed) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
       nlohmann::json result;
-      for(auto const &p : m_names)
+      for(auto const &p : m_params)
       {
-        if(params.find(p) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p + "\"");
-        result.push_back(params[p]);
+        if(params.find(p.getName()) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p.getName() + "\"");
+        result.push_back(params[p.getName()]);
       }
       testParameters(params.size());
       return result;
@@ -159,8 +169,8 @@ private:
     if(json_params_size != m_params.size()) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(m_params.size()) + " argument(s), but found " + std::to_string(json_params_size));
   }
   const std::function<nlohmann::json(const nlohmann::json &)> m_method;
-  const std::vector<param_t> m_params;
-  std::vector<std::string> m_names;
+  std::vector<param_t> m_params;
+  bool m_isnamed{false};
 };
 
 class Notification

@@ -69,9 +69,9 @@ public:
         nlohmann::json p;
         p["cpp_type"] = param.getType();
         p["json_type"] = param.getJSONType();
+        p["name"] = param.getName();
         j["params"].push_back(p);
       }
-      j["names"] = methodPtr->getNames();
       json.push_back(j);
     }
     return json;
