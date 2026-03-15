@@ -95,163 +95,103 @@ private:
   nlohmann::json::value_t json_type;
 };
 
-class Method
-{
+template<typename ReturnType>
+class Procedure {
 public:
 #if !defined(_WIN32)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  Method(const Method&) = delete;
-  Method& operator=(const Method&) = delete;
-  Method(Method&&) = default;
-  Method& operator=(Method&&) = default;
-  Method(std::function<nlohmann::json(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_method(std::move(f)) , m_params(std::move(params)){}
+    Procedure(const Procedure&) = delete;
+    Procedure& operator=(const Procedure&) = delete;
+    Procedure(Procedure&&) = default;
+    Procedure& operator=(Procedure&&) = default;
+
+    // Constructor takes a callable and parameter descriptions
+    Procedure(std::function<ReturnType(const nlohmann::json&)> f,
+              std::vector<param_t> params)
+        : m_callable(std::move(f)), m_params(std::move(params)) {}
 #if !defined(_WIN32)
 #pragma GCC diagnostic pop
 #endif
-  nlohmann::json operator()(const nlohmann::json & request) const
-  { 
-    try
-    {
-      return m_method(normalize_parameter(request));
-    }
-    catch(const exception& e)
-    {
-      throw process_type_error(e);
-    }
-  }
-  void setParameterNames(const std::vector<std::string>& names)
-  {
-    if(!names.empty()) m_isnamed = true;
-    for(std::size_t i =0 ;i!= names.size(); ++i)
-    {
-        m_params[i].setName(names[i]);
-    }
-  }
-  std::size_t arity() const noexcept { return m_params.size(); }
-  std::vector<param_t> getParameters() const noexcept { return m_params; }
-private:
-  exception process_type_error(const exception &e) const
-  {
-    if(e.Code() == invalid_params && !e.Data().empty())
-    {
-      std::string message = e.Message() + " for parameter ";
-      if(!m_params[std::stoi(e.Data())].getName().empty()) message += "\"" + m_params[std::stoi(e.Data())].getName() + "\"";
-      else message += e.Data();
-      return exception(e.Code(), message);
-    }
-    else return e;
-  }
-  nlohmann::json normalize_parameter(const nlohmann::json &params) const
-  {
-    if(params.is_array())
-    {
-        testParameters(params.size());
-        return params;
-    }
-    else if(params.is_object())
-    {
-      if(!m_isnamed) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
-      nlohmann::json result;
-      for(auto const &p : m_params)
-      {
-        if(params.find(p.getName()) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p.getName() + "\"");
-        result.push_back(params[p.getName()]);
-      }
-      testParameters(params.size());
-      return result;
-    }
-    throw exception(invalid_request, "invalid request: the 'params' field must be either an array or an object.");
-  }
-  void testParameters(const std::size_t json_params_size) const
-  {
-    if(json_params_size != m_params.size()) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(m_params.size()) + " argument(s), but found " + std::to_string(json_params_size));
-  }
-  const std::function<nlohmann::json(const nlohmann::json &)> m_method;
-  std::vector<param_t> m_params;
-  bool m_isnamed{false};
-};
 
-class Notification
-{
-public:
-#if !defined(_WIN32)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-#endif
-  Notification(std::function<void(const nlohmann::json &)> f,const std::vector<param_t>& params) : m_notif(std::move(f)) , m_params(std::move(params)){}
-  Notification(const Method&) = delete;
-  Notification& operator=(const Method&) = delete;
-  Notification(Notification&&) = default;
-  Notification& operator=(Notification&&) = default;
-#if !defined(_WIN32)
-#pragma GCC diagnostic pop
-#endif
-  void operator()(const nlohmann::json & request) const
-  { 
-    try 
+    // Invoke function
+    ReturnType operator()(const nlohmann::json& request) const
     {
-      m_notif(normalize_parameter(request));
+        try {
+            nlohmann::json args = normalize_parameter(request);
+            return m_callable(args); // works for both void and nlohmann::json
+        }
+        catch (const exception& e) {
+            throw process_type_error(e);
+        }
     }
-    catch(const exception& e)
-    {
-      throw  process_type_error(e);
-    }
-    
-  }
-  std::size_t arity() const noexcept { return m_params.size(); }
-  std::vector<param_t> getParameters() const noexcept { return m_params; }
-  void setParameterNames(const std::vector<std::string>& names)
-  {
-    m_names = names;
-  }
-  const std::vector<std::string> getNames()
-  {
-    return m_names;
-  }
-private:
-  exception process_type_error(const exception &e) const
-  {
-    if(e.Code() == invalid_params && !e.Data().empty())
-    {
-      std::string message = e.Message() + " for parameter ";
-      if(!m_names.empty()) message += "\"" + m_names[std::stoi(e.Data())] + "\"";
-      else message += e.Data();
-      return exception(e.Code(), message);
-    }
-    else return e;
-  }
-  nlohmann::json normalize_parameter(const nlohmann::json &params) const
-  {
-    if(params.is_array())
-    {
-      testParameters(params.size());
-      return params;
-    }
-    else if(params.is_object())
-    {
-      if(m_names.empty()) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
-      nlohmann::json result;
-      for(auto const &p : m_names)
-      {
-        if(params.find(p) == params.end()) throw exception(invalid_params, "invalid parameter: missing named parameter \"" + p + "\"");
-        result.push_back(params[p]);
-      }
-      testParameters(params.size());
-      return result;
-    }
-    throw exception(invalid_request, "invalid request: the 'params' field must be either an array or an object.");
-  }
-  void testParameters(const std::size_t json_params_size) const
-  {
-    if(json_params_size != m_params.size()) throw exception(invalid_params,"invalid parameter: expected " + std::to_string(m_params.size()) + " argument(s), but found " + std::to_string(json_params_size));
-  }
-  const std::function<void(const nlohmann::json &)> m_notif;
-  const std::vector<param_t> m_params;
-  std::vector<std::string> m_names;
-};
 
+    // Parameter helpers
+    void setParameterNames(const std::vector<std::string>& names)
+    {
+        m_names = names;
+        if (!m_names.empty()) m_isNamed = true;
+
+        for (std::size_t i = 0; i < m_names.size() && i < m_params.size(); ++i)
+            m_params[i].setName(m_names[i]);
+    }
+
+    std::size_t arity() const noexcept { return m_params.size(); }
+    std::vector<param_t> getParameters() const noexcept { return m_params; }
+
+private:
+    nlohmann::json normalize_parameter(const nlohmann::json& params) const
+    {
+        if (params.is_array()) {
+            testParameters(params.size());
+            return params;
+        }
+        else if (params.is_object()) {
+            if (!m_isNamed) throw exception(invalid_params, "invalid parameter: procedure doesn't support named parameter");
+
+            nlohmann::json result;
+            for (const auto& name : m_names) {
+                if (params.find(name) == params.end())
+                    throw exception(invalid_params, "invalid parameter: missing named parameter \"" + name + "\"");
+                result.push_back(params[name]);
+            }
+            testParameters(params.size());
+            return result;
+        }
+        throw exception(invalid_request, "invalid request: the 'params' field must be either an array or an object");
+    }
+
+    void testParameters(std::size_t json_params_size) const
+    {
+        if (json_params_size != m_params.size())
+            throw exception(invalid_params,
+                            "invalid parameter: expected " + std::to_string(m_params.size()) +
+                            " argument(s), but found " + std::to_string(json_params_size));
+    }
+
+    exception process_type_error(const exception& e) const
+    {
+        if (e.Code() == invalid_params && !e.Data().empty()) {
+            std::string message = e.Message() + " for parameter ";
+            if (!m_names.empty()) message += "\"" + m_names[std::stoi(e.Data())] + "\"";
+            else message += e.Data();
+            return exception(e.Code(), message);
+        }
+        return e;
+    }
+
+private:
+    std::function<ReturnType(const nlohmann::json&)> m_callable;
+    std::vector<param_t> m_params;
+    std::vector<std::string> m_names;
+    bool m_isNamed{false};
+};
+// Method: returns JSON
+using Method = Procedure<nlohmann::json>;
+
+// Notification: returns void
+using Notification = Procedure<void>;
 // ================== Compile-time type mapping ==================
 template<typename T, typename Enable = void> struct type_mapper { static constexpr nlohmann::json::value_t value = nlohmann::json::value_t::object; };
 // -------------------- Basic types --------------------

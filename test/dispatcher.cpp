@@ -64,7 +64,7 @@ TEST_CASE("error on invoking unsupported named parameter") {
 TEST_CASE("passing invalid literal as param") {
     Dispatcher d;
     CHECK(d.Add("some method", GetHandle(&add_function)));
-    REQUIRE_THROWS_WITH(d.InvokeMethod("some method", true), "-32600: invalid request: the 'params' field must be either an array or an object.");
+    REQUIRE_THROWS_WITH(d.InvokeMethod("some method", true), "-32600: invalid request: the 'params' field must be either an array or an object");
 }
 
 TEST_CASE("dispatching unknown procedures") {
