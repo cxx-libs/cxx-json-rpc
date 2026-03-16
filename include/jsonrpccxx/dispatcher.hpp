@@ -5,11 +5,12 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace jsonrpc
 {
 
-using NamedParamMapping = std::vector<std::string>;
+using NamedParamMapping = std::optional<std::vector<std::string>>;
   
 class Dispatcher
 {
@@ -24,18 +25,18 @@ public:
 #endif
   ~Dispatcher() noexcept = default;
 
-  bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping = {})
+  bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping)
   {
     if(contains(name)) return false;
-    callback.setParameterNames(mapping);
+    if(mapping) callback.setParameterNames(mapping.value());
     methods.try_emplace(name,std::make_unique<Method>(std::move(callback)));
     return true;
   }
 
-  bool Add(const std::string &name,Notification callback, const NamedParamMapping &mapping = {})
+  bool Add(const std::string &name,Notification callback, const NamedParamMapping &mapping)
   {
     if(contains(name)) return false;
-    callback.setParameterNames(mapping);
+    if(mapping) callback.setParameterNames(mapping.value());
     notifications.try_emplace(name,std::make_unique<Notification>(std::move(callback)));
     return true;
   }

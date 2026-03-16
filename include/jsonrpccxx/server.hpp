@@ -2,6 +2,7 @@
 
 #include "jsonrpccxx/dispatcher.hpp"
 #include <string>
+#include <initializer_list>
 
 namespace jsonrpc
 {
@@ -19,16 +20,18 @@ public:
 #endif
   ~JsonRpcServer() noexcept = default;
 
-  bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping = {})
+  bool Add(const std::string &name,Method callback, const std::initializer_list<std::string>& mapping = {})
   {
     if(name.rfind("rpc.", 0) == 0) return false;
-    return m_dispatcher.Add(name, std::move(callback), mapping);
+    if(mapping.size()==0) return m_dispatcher.Add(name, std::move(callback),  std::nullopt );
+    else return m_dispatcher.Add(name, std::move(callback),  mapping );
   }
     
-  bool Add(const std::string &name,Notification callback, const NamedParamMapping &mapping = {})
+  bool Add(const std::string &name,Notification callback, const std::initializer_list<std::string>& mapping = {})
   {
     if(name.rfind("rpc.", 0) == 0) return false;
-    return m_dispatcher.Add(name, std::move(callback), mapping);
+    if(mapping.size()==0) return m_dispatcher.Add(name, std::move(callback),  std::nullopt );
+    else return m_dispatcher.Add(name, std::move(callback),  mapping );
   }
 
   nlohmann::json getMethodList()
