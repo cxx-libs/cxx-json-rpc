@@ -168,7 +168,7 @@ public:
     // Parameter helpers
     void setParameterNames(const std::vector<std::string>& names)
     {
-      if(arity()!=names.size()) throw exception(server_error, "Callback arity (" + std::to_string(arity()) +") does not match mapping size (" + std::to_string(names.size()) + ")");
+      if(arity()!=names.size()) throw exception(server_error, "Callback arity (" + std::to_string(arity()) +") does not match mapping size (" + std::to_string(names.size()) + ')');
         if (!names.empty()) m_isNamed = true;
 
         for (std::size_t i = 0; i < names.size(); ++i)
@@ -212,7 +212,7 @@ private:
     exception process_type_error(const exception& e) const
     {
         if (e.Code() == invalid_params && !e.Data().empty()) {
-            std::string message = e.Message() + " for parameter "+ (m_isNamed ? '"' + m_params[std::stoi(e.Data())].getName() + '"' : e.Data()) ;
+            std::string message = e.Message() + " for parameter "+ (m_isNamed ? '\'' + m_params[std::stoi(e.Data())].getName() + '\'' : e.Data()) ;
             //if (m_isNamed) message += '\'' + m_params[std::stoi(e.Data())].getName() + '\'';
             //else message += e.Data();
             return exception(e.Code(), message);

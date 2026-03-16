@@ -47,8 +47,8 @@ TEST_CASE("invoking missing named parameter") {
 TEST_CASE("invoking wrong type namedparameter") {
   Dispatcher d;
   CHECK(d.Add("some method", GetHandle(&add_function), {{"a", "b"}}));
-  REQUIRE_THROWS_WITH(d.InvokeMethod("some method", {{"a", "asdfasdf"}, {"b", -7}}), "-32602: invalid parameter: must be unsigned integer, but is string for parameter \"a\"");
-  REQUIRE_THROWS_WITH(d.InvokeMethod("some method", {{"a", -10}, {"b", -7}}), "-32602: invalid parameter: must be unsigned integer, but is integer for parameter \"a\"");
+  REQUIRE_THROWS_WITH(d.InvokeMethod("some method", {{"a", "asdfasdf"}, {"b", -7}}), "-32602: invalid parameter: must be unsigned integer, but is string for parameter 'a'");
+  REQUIRE_THROWS_WITH(d.InvokeMethod("some method", {{"a", -10}, {"b", -7}}), "-32602: invalid parameter: must be unsigned integer, but is integer for parameter 'a'");
 }
 
 TEST_CASE("error on invoking unsupported named parameter") {
