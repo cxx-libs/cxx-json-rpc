@@ -2,9 +2,9 @@
 #include "warehouseapp.hpp"
 
 #include <iostream>
-#include <vector>
 #include <jsonrpccxx/client.hpp>
 #include <jsonrpccxx/server.hpp>
+#include <vector>
 
 using namespace jsonrpc;
 using namespace std;
@@ -12,61 +12,65 @@ using namespace std;
 class WareHouseClient
 {
 public:
-  explicit WareHouseClient(JsonRpcClient &client) : client(client) {}
-  bool AddProduct(const Product &p) { return client.CallMethod<bool>(1, "AddProduct", {p}); }
+  explicit WareHouseClient( JsonRpcClient& client ) : client( client ) {}
+  bool AddProduct( const Product& p ) { return client.CallMethod<bool>( 1, "AddProduct", { p } ); }
 
-  void NotifySum(const int a, const int b) {  client.CallNotification("Notify", {a,b});}
-  Product GetProduct(const std::string &id) { return client.CallMethod<Product>(5, "GetProduct", {id}); }
-  vector<Product> AllProducts() { return client.CallMethod<vector<Product>>(7, "AllProducts", {}); }
+  void            NotifySum( const int a, const int b ) { client.CallNotification( "Notify", { a, b } ); }
+  Product         GetProduct( const std::string& id ) { return client.CallMethod<Product>( 5, "GetProduct", { id } ); }
+  vector<Product> AllProducts() { return client.CallMethod<vector<Product>>( 7, "AllProducts", {} ); }
 
 private:
   JsonRpcClient& client;
 };
 
-void doWarehouseStuff2(IClientConnector &clientConnector) {
-  JsonRpcClient client2(clientConnector);
-  WareHouseClient appClient2(client2);
-  appClient2.NotifySum(41,1);
+void doWarehouseStuff2( IClientConnector& clientConnector )
+{
+  JsonRpcClient   client2( clientConnector );
+  WareHouseClient appClient2( client2 );
+  appClient2.NotifySum( 41, 1 );
 }
 
-void doWarehouseStuff(IClientConnector &clientConnector) {
-  JsonRpcClient client(clientConnector);
-  WareHouseClient appClient(client);
-  Product p;
-  p.id = "0xff";
+void doWarehouseStuff( IClientConnector& clientConnector )
+{
+  JsonRpcClient   client( clientConnector );
+  WareHouseClient appClient( client );
+  Product         p;
+  p.id    = "0xff";
   p.price = 22.4;
-  p.name = "Product 1";
-  p.cat = category::cash_carry;
-  cout << "Adding product: " << std::boolalpha << appClient.AddProduct(p) << "\n";
-
+  p.name  = "Product 1";
+  p.cat   = category::cash_carry;
+  cout << "Adding product: " << std::boolalpha << appClient.AddProduct( p ) << "\n";
 
   Product g;
-  p.id = "0x2f";
+  p.id    = "0x2f";
   p.price = 88.4;
-  p.name = "MyProduct";
-  p.cat = category::cash_carry;
-  cout << "Adding product: " << std::boolalpha << appClient.AddProduct(p) << "\n";
+  p.name  = "MyProduct";
+  p.cat   = category::cash_carry;
+  cout << "Adding product: " << std::boolalpha << appClient.AddProduct( p ) << "\n";
 
-  Product p2 = appClient.GetProduct("0xff");
+  Product p2 = appClient.GetProduct( "0xff" );
   cout << "Found product: " << p2.name << "\n";
-  try {
-    appClient.GetProduct("0xff2");
-  } catch (const jsonrpc::exception &e) {
+  try
+  {
+    appClient.GetProduct( "0xff2" );
+  }
+  catch( const jsonrpc::exception& e )
+  {
     cerr << "Error finding product: " << e.what() << "\n";
   }
 
-  try {
-  Product p3 = appClient.GetProduct("0x2f");
-  cout << "Found product: " << p3.name << " at price : "<< p3.price << "\n";
-} catch (const jsonrpc::exception &e) {
-  cerr << "Error finding product: " << e.what() << "\n";
-}
-
-
- auto all = appClient.AllProducts();
-  for (const auto &p: all) {
-    cout << p.name << endl;
+  try
+  {
+    Product p3 = appClient.GetProduct( "0x2f" );
+    cout << "Found product: " << p3.name << " at price : " << p3.price << "\n";
   }
+  catch( const jsonrpc::exception& e )
+  {
+    cerr << "Error finding product: " << e.what() << "\n";
+  }
+
+  auto all = appClient.AllProducts();
+  for( const auto& p: all ) { cout << p.name << endl; }
 }
 
 int main()
@@ -75,14 +79,14 @@ int main()
 
   // Bindings
   WarehouseServer app;
-  rpcServer.Add("GetProduct", GetHandle(&WarehouseServer::GetProduct, app), {"id"});
-  rpcServer.Add("AddProduct", GetHandle(&WarehouseServer::AddProduct, app), {"product"});
-  rpcServer.Add("AllProducts", GetHandle(&WarehouseServer::AllProducts, app), {});
-  rpcServer.Add("Notify", GetHandle(&WarehouseServer::Notify, app), {"a","b"});
+  rpcServer.Add( "GetProduct", GetHandle( &WarehouseServer::GetProduct, app ), { "id" } );
+  rpcServer.Add( "AddProduct", GetHandle( &WarehouseServer::AddProduct, app ), { "product" } );
+  rpcServer.Add( "AllProducts", GetHandle( &WarehouseServer::AllProducts, app ), {} );
+  rpcServer.Add( "Notify", GetHandle( &WarehouseServer::Notify, app ), { "a", "b" } );
 
   cout << "Running in-memory example" << "\n";
-  InMemoryConnector inMemoryConnector(rpcServer);
-  doWarehouseStuff(inMemoryConnector);
+  InMemoryConnector inMemoryConnector( rpcServer );
+  doWarehouseStuff( inMemoryConnector );
 
   return 0;
 }
