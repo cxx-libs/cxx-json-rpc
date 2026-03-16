@@ -2,10 +2,17 @@ cmake_minimum_required(VERSION 3.14)
 
 project(json-rpc-cxx VERSION 0.0.1 LANGUAGES CXX)
 
-option(JSONRPCCXX_TESTS "Enable tests" ON)
-option(JSONRPCCXX_EXAMPLES "Enable examples" ON)
-option(JSONRPCCXX_CODE_COVERAGE "Enable coverage reporting" OFF)
-option(JSONRPCCXX_ALLOW_FETCHING "Allowing fetching the vendors" ON)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  option(JSONRPCCXX_TESTS "Enable tests" ON)
+  option(JSONRPCCXX_EXAMPLES "Enable examples" ON)
+  option(JSONRPCCXX_CODE_COVERAGE "Enable coverage reporting" OFF)
+  option(JSONRPCCXX_ALLOW_FETCHING "Allowing fetching the vendors" ON)
+else()
+  option(JSONRPCCXX_TESTS "Enable tests" OFF)
+  option(JSONRPCCXX_EXAMPLES "Enable examples" OFF)
+  option(JSONRPCCXX_CODE_COVERAGE "Enable coverage reporting" OFF)
+  option(JSONRPCCXX_ALLOW_FETCHING "Allowing fetching the vendors" OFF)
+endif()
 
 include(GNUInstallDirs)
 
@@ -61,6 +68,9 @@ string(
 
 
 if(JSONRPCCXX_TESTS)
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    include(CTest)
+  endif()
   enable_testing()
   add_subdirectory(test)
 endif()
