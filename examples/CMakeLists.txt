@@ -18,7 +18,7 @@ if(NOT TARGET httplib::httplib)
   endif()
 endif()
 
-add_library(warehouse SHARED warehouse/warehouse.cpp warehouse/warehouse.hpp warehouse/types.h)
+add_library(warehouse STATIC warehouse/warehouse.cpp warehouse/warehouse.hpp warehouse/types.h)
 target_include_directories(warehouse PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/warehouse>)
 target_link_libraries(warehouse PUBLIC cxx-jsonrpc::cxx-jsonrpc)
 
