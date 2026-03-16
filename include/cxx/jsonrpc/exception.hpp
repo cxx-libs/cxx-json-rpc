@@ -13,31 +13,31 @@ public:
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  exception( int code, const std::string& message ) noexcept : code( code ), message( message ), err( std::to_string( code ) + ": " + message ) {}
-  exception( int code, const std::string& message, const std::string& data ) noexcept : code( code ), message( message ), data( data ), err( std::to_string( code ) + ": " + message + ", data: " + data ) {}
+  exception( int code, const std::string& message ) noexcept : m_code( code ), m_message( message ), m_err( std::to_string( code ) + ": " + message ) {}
+  exception( int code, const std::string& message, const std::string& data ) noexcept : m_code( code ), m_message( message ), m_data( data ), m_err( std::to_string( code ) + ": " + message + ", data: " + data ) {}
 #if !defined( _WIN32 )
   #pragma GCC diagnostic pop
 #endif
 
-  error_type Type() const
+  error_type type() const
   {
-    if( code >= -32603 && code <= -32600 ) return static_cast<error_type>( code );
-    if( code >= -32099 && code <= -32000 ) return server_error;
-    if( code == -32700 ) return parse_error;
+    if( m_code >= -32603 && m_code <= -32600 ) return static_cast<error_type>( m_code );
+    if( m_code >= -32099 && m_code <= -32000 ) return server_error;
+    if( m_code == -32700 ) return parse_error;
     return invalid;
   }
 
-  int                Code() const { return code; }
-  const std::string& Message() const { return message; }
-  const std::string& Data() const { return data; }
+  int                code() const { return m_code; }
+  const std::string& message() const { return m_message; }
+  const std::string& data() const { return m_data; }
 
-  const char* what() const noexcept override { return err.c_str(); }
+  const char* what() const noexcept override { return m_err.c_str(); }
 
 private:
-  int         code;
-  std::string message;
-  std::string data;
-  std::string err;
+  int         m_code{ 0 };
+  std::string m_message;
+  std::string m_data;
+  std::string m_err;
 };
 
 }  // namespace jsonrpc

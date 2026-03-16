@@ -38,10 +38,10 @@ public:
   void SetError( const exception& e )
   {
     nlohmann::json response = { { "jsonrpc", "2.0" }, { "id", "1" } };
-    if( !e.Data().empty() ) { response["error"] = { { "code", e.Code() }, { "message", e.Message() }, { "data", e.Data() } }; }
+    if( !e.data().empty() ) { response["error"] = { { "code", e.code() }, { "message", e.message() }, { "data", e.data() } }; }
     else
     {
-      response["error"] = { { "code", e.Code() }, { "message", e.Message() } };
+      response["error"] = { { "code", e.code() }, { "message", e.message() } };
     }
     raw_response = response.dump();
   }

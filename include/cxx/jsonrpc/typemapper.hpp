@@ -274,13 +274,7 @@ private:
 
   exception process_type_error( const exception& e ) const
   {
-    if( e.Code() == invalid_params && !e.Data().empty() )
-    {
-      std::string message = e.Message() + " for parameter " + ( m_isNamed ? '\'' + m_params[std::stoi( e.Data() )].getName() + '\'' : e.Data() );
-      //if (m_isNamed) message += '\'' + m_params[std::stoi(e.Data())].getName() + '\'';
-      //else message += e.Data();
-      return exception( e.Code(), message );
-    }
+    if( e.code() == invalid_params && !e.data().empty() ) { return exception( e.code(), e.message() + " for parameter " + ( m_isNamed ? '\'' + m_params[std::stoi( e.data() )].getName() + '\'' : e.data() ) ); }
     return e;
   }
 

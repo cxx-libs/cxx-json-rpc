@@ -89,8 +89,8 @@ private:
     }
     catch( const exception& e )
     {
-      nlohmann::json error = { { "code", e.Code() }, { "message", e.Message() } };
-      if( !e.Data().empty() ) error["data"] = nlohmann::json::parse( e.Data() );
+      nlohmann::json error = { { "code", e.code() }, { "message", e.message() } };
+      if( !e.data().empty() ) error["data"] = nlohmann::json::parse( e.data() );
       return nlohmann::json{ { "id", id }, { "error", error }, { "jsonrpc", "2.0" } };
     }
     catch( const std::exception& e )
