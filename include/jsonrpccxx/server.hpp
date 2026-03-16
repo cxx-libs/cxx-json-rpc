@@ -34,9 +34,19 @@ public:
     else return m_dispatcher.Add(name, std::move(callback),  mapping );
   }
 
-  nlohmann::json getMethodList()
+  nlohmann::json getMethodList() const
   {
     return m_dispatcher.listMethods();
+  }
+
+  nlohmann::json getNotificationList() const
+  {
+    return m_dispatcher.listNotifications();
+  }
+
+  nlohmann::json getProcedures()
+  {
+    return m_dispatcher.listProcedures();
   }
 
   std::string HandleRequest(const std::string &requestString)

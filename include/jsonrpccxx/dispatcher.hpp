@@ -58,12 +58,13 @@ public:
   nlohmann::json listMethods() const
   {
     nlohmann::json json = nlohmann::json::array();
-    for (const auto& [name, methodPtr] : methods)
+    for (const auto& [name, ptr] : methods)
     {
       nlohmann::json j;
       j["name"] = name;
+      j["description"] =ptr->getDescription();
       j["params"] = nlohmann::json::array();
-      for(const auto& param : methodPtr->getParameters())
+      for(const auto& param : ptr->getParameters())
       {
         nlohmann::json p;
         p["cpp_type"] = param.getType();
@@ -75,6 +76,37 @@ public:
     }
     return json;
   }
+  nlohmann::json listNotifications() const
+  {
+    nlohmann::json json = nlohmann::json::array();
+    for (const auto& [name, ptr] : notifications)
+    {
+      nlohmann::json j;
+      j["name"] = name;
+      j["description"] =ptr->getDescription();
+      j["params"] = nlohmann::json::array();
+      for(const auto& param : ptr->getParameters())
+      {
+        nlohmann::json p;
+        p["cpp_type"] = param.getType();
+        p["json_type"] = param.getJSONType();
+        p["name"] = param.getName();
+        j["params"].push_back(p);
+      }
+      json.push_back(j);
+    }
+    return json;
+  }
+ 
+  nlohmann::json listProcedures() const
+  {
+    return {{"notification" ,listNotifications()}, {"methods", listMethods()} };
+    //json["notifications"] = listNotifications();
+    ///json["methods"] = listMethods();
+    //return json;
+  }
+
+
 private:
   std::unordered_map<std::string, std::unique_ptr<Method>> methods;
   std::unordered_map<std::string, std::unique_ptr<Notification>> notifications;

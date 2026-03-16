@@ -75,12 +75,14 @@ int main()
 
   // Bindings
   WarehouseServer app;
-  rpcServer.Add("GetProduct", GetHandle(&WarehouseServer::GetProduct, app), {"id"});
+  rpcServer.Add("GetProduct", GetHandle(&WarehouseServer::GetProduct, app,"get the product"), {"id"});
   rpcServer.Add("AddProduct", GetHandle(&WarehouseServer::AddProduct, app), {"product"});
   rpcServer.Add("AllProducts", GetHandle(&WarehouseServer::AllProducts, app), {});
   rpcServer.Add("Notify", GetHandle(&WarehouseServer::Notify, app), {"a","b"});
 
   std::cout<<rpcServer.getMethodList().dump(2)<<std::endl;
+  std::cout<<rpcServer.getNotificationList().dump(2)<<std::endl;
+  std::cout<<rpcServer.getProcedures().dump(2)<<std::endl;
 
   cout << "Running websocket example" << "\n";
   WebsocketServer WebsocketServer(rpcServer,"127.0.0.1", 8888);
