@@ -1,6 +1,6 @@
 #include "doctest/doctest.h"
 
-#include <jsonrpccxx/typemapper.hpp>
+#include <cxx/jsonrpc/typemapper.hpp>
 #include <limits>
 
 using namespace jsonrpc;

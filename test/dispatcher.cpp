@@ -1,6 +1,6 @@
 #include "doctest/doctest.h"
 
-#include <jsonrpccxx/dispatcher.hpp>
+#include <cxx/jsonrpc/dispatcher.hpp>
 
 using namespace jsonrpc;
 

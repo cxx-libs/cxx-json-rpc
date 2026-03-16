@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cxx/jsonrpc/iclientconnector.hpp>
+#include <cxx/jsonrpc/server.hpp>
 #include <iostream>
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXSocket.h>
@@ -7,8 +9,6 @@
 #include <ixwebsocket/IXUserAgent.h>
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXWebSocketServer.h>
-#include <jsonrpccxx/iclientconnector.hpp>
-#include <jsonrpccxx/server.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 

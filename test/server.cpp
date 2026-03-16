@@ -1,7 +1,7 @@
 #include "doctest/doctest.h"
 #include "testserverconnector.hpp"
 
-#include <jsonrpccxx/server.hpp>
+#include <cxx/jsonrpc/server.hpp>
 #include <string>
 using namespace jsonrpc;
 

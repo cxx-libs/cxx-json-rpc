@@ -1,8 +1,8 @@
 #pragma once
 
-#include "jsonrpccxx/batch.hpp"
-#include "jsonrpccxx/exception.hpp"
-#include "jsonrpccxx/iclientconnector.hpp"
+#include "cxx/jsonrpc/batch.hpp"
+#include "cxx/jsonrpc/exception.hpp"
+#include "cxx/jsonrpc/iclientconnector.hpp"
 
 #include <cstdint>
 #include <nlohmann/json.hpp>

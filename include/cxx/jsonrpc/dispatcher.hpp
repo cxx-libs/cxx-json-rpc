@@ -1,7 +1,6 @@
 #pragma once
 
-#include "jsonrpccxx/typemapper.hpp"
-#include "typemapper.hpp"
+#include "cxx/jsonrpc/typemapper.hpp"
 
 #include <optional>
 #include <string>

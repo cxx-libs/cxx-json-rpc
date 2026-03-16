@@ -2,8 +2,8 @@
 
 #include "../examples/inmemoryconnector.hpp"
 
-#include <jsonrpccxx/client.hpp>
-#include <jsonrpccxx/server.hpp>
+#include <cxx/jsonrpc/client.hpp>
+#include <cxx/jsonrpc/server.hpp>
 
 using namespace jsonrpc;
 

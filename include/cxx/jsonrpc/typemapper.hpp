@@ -1,7 +1,7 @@
 #pragma once
 
+#include "cxx/jsonrpc/exception.hpp"
 #include "error_code.hpp"
-#include "jsonrpccxx/exception.hpp"
 #include "nlohmann/json.hpp"
 
 #include <cstddef>

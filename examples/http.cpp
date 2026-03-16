@@ -1,9 +1,9 @@
 #include "cpphttplibconnector.hpp"
 #include "warehouse.hpp"
 
+#include <cxx/jsonrpc/client.hpp>
+#include <cxx/jsonrpc/server.hpp>
 #include <iostream>
-#include <jsonrpccxx/client.hpp>
-#include <jsonrpccxx/server.hpp>
 #include <vector>
 
 using namespace jsonrpc;

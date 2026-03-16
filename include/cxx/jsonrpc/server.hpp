@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jsonrpccxx/dispatcher.hpp"
+#include "cxx/jsonrpc/dispatcher.hpp"
 
 #include <initializer_list>
 #include <string>

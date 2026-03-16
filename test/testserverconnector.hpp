@@ -1,7 +1,7 @@
 #pragma once
 #include "doctest/doctest.h"
 
-#include <jsonrpccxx/server.hpp>
+#include <cxx/jsonrpc/server.hpp>
 
 using namespace jsonrpc;
 

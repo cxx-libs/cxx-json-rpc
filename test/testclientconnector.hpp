@@ -1,9 +1,9 @@
 #pragma once
 #include "doctest/doctest.h"
 
-#include <jsonrpccxx/client.hpp>
-#include <jsonrpccxx/exception.hpp>
-#include <jsonrpccxx/iclientconnector.hpp>
+#include <cxx/jsonrpc/client.hpp>
+#include <cxx/jsonrpc/exception.hpp>
+#include <cxx/jsonrpc/iclientconnector.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 

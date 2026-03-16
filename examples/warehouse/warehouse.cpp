@@ -1,6 +1,6 @@
 #include "warehouse.hpp"
 
-#include <jsonrpccxx/exception.hpp>
+#include <cxx/jsonrpc/exception.hpp>
 
 using namespace jsonrpc;
 

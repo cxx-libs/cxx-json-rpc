@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jsonrpccxx/error_code.hpp"
+#include "cxx/jsonrpc/error_code.hpp"
 
 #include <cstdint>
 #include <future>

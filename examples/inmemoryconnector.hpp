@@ -1,6 +1,6 @@
 #pragma once
-#include <jsonrpccxx/iclientconnector.hpp>
-#include <jsonrpccxx/server.hpp>
+#include <cxx/jsonrpc/iclientconnector.hpp>
+#include <cxx/jsonrpc/server.hpp>
 
 //This class is server and client connector at the same time.
 class InMemoryConnector : public jsonrpc::ISyncClientConnector

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jsonrpccxx/exception.hpp"
+#include "cxx/jsonrpc/exception.hpp"
 
 #include <cstddef>
 #include <cstdint>

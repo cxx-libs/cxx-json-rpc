@@ -1,6 +1,6 @@
 #include "doctest/doctest.h"
 
-#include <jsonrpccxx/exception.hpp>
+#include <cxx/jsonrpc/exception.hpp>
 
 TEST_CASE( "exception error type" )
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "jsonrpccxx/error_code.hpp"
+#include "cxx/jsonrpc/error_code.hpp"
 
 #include <exception>
 #include <string>
