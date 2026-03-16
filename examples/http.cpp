@@ -1,5 +1,5 @@
-#include "warehouseapp.hpp"
-#include "websocketconnector.hpp"
+#include "cpphttplibconnector.hpp"
+#include "warehouse.hpp"
 
 #include <iostream>
 #include <jsonrpccxx/client.hpp>
@@ -79,23 +79,17 @@ int main()
 
   // Bindings
   WarehouseServer app;
-  rpcServer.Add( "GetProduct", GetHandle( &WarehouseServer::GetProduct, app, "get the product" ), { "id" } );
+  rpcServer.Add( "GetProduct", GetHandle( &WarehouseServer::GetProduct, app ), { "id" } );
   rpcServer.Add( "AddProduct", GetHandle( &WarehouseServer::AddProduct, app ), { "product" } );
   rpcServer.Add( "AllProducts", GetHandle( &WarehouseServer::AllProducts, app ), {} );
   rpcServer.Add( "Notify", GetHandle( &WarehouseServer::Notify, app ), { "a", "b" } );
 
-  std::cout << rpcServer.getMethodList().dump( 2 ) << std::endl;
-  std::cout << rpcServer.getNotificationList().dump( 2 ) << std::endl;
-  std::cout << rpcServer.getProcedures().dump( 2 ) << std::endl;
-
-  cout << "Running websocket example" << "\n";
-  WebsocketServer WebsocketServer( rpcServer, "127.0.0.1", 8888 );
-  cout << "Starting websocket server: " << std::boolalpha << WebsocketServer.start() << "\n";
-  WebsocketClientConnector websocketClient( "127.0.0.1", 8888 );
-  WebsocketClientConnector websocketClient2( "127.0.0.1", 8888 );
+  cout << "Running http example" << "\n";
+  CppHttpLibServerConnector httpServer( rpcServer, 8484 );
+  cout << "Starting http server: " << std::boolalpha << httpServer.StartListening() << "\n";
+  CppHttpLibClientConnector httpClient( "localhost", 8484 );
   std::this_thread::sleep_for( 0.5s );
-  doWarehouseStuff( websocketClient );
-  doWarehouseStuff2( websocketClient2 );
+  doWarehouseStuff( httpClient );
 
   return 0;
 }

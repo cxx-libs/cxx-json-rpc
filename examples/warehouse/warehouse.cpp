@@ -1,4 +1,4 @@
-#include "warehouseapp.hpp"
+#include "warehouse.hpp"
 
 #include <jsonrpccxx/exception.hpp>
 

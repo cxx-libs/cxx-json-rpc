@@ -1,5 +1,5 @@
-#include "cpphttplibconnector.hpp"
-#include "warehouseapp.hpp"
+#include "inmemoryconnector.hpp"
+#include "warehouse.hpp"
 
 #include <iostream>
 #include <jsonrpccxx/client.hpp>
@@ -84,12 +84,9 @@ int main()
   rpcServer.Add( "AllProducts", GetHandle( &WarehouseServer::AllProducts, app ), {} );
   rpcServer.Add( "Notify", GetHandle( &WarehouseServer::Notify, app ), { "a", "b" } );
 
-  cout << "Running http example" << "\n";
-  CppHttpLibServerConnector httpServer( rpcServer, 8484 );
-  cout << "Starting http server: " << std::boolalpha << httpServer.StartListening() << "\n";
-  CppHttpLibClientConnector httpClient( "localhost", 8484 );
-  std::this_thread::sleep_for( 0.5s );
-  doWarehouseStuff( httpClient );
+  cout << "Running in-memory example" << "\n";
+  InMemoryConnector inMemoryConnector( rpcServer );
+  doWarehouseStuff( inMemoryConnector );
 
   return 0;
 }

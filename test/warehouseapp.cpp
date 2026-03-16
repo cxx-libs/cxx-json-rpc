@@ -1,8 +1,6 @@
-
-#include "../examples/warehouse/warehouseapp.hpp"
-
 #include "doctest/doctest.h"
 #include "integrationtest.hpp"
+#include "warehouse.hpp"
 
 TEST_CASE_FIXTURE( IntegrationTest, "warehouse_test" )
 {
