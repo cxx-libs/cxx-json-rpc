@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cxx/jsonrpc/error_code.hpp"
+#include "cxx/jsonrpc/export.hpp"
 
 #include <cstdint>
 #include <future>
@@ -19,22 +20,22 @@ class IClientConnector
 {
 public:
   // General timeout setter (template)
-  template<class Rep = double, class Period = std::milli> void setTimeout( const std::chrono::duration<Rep, Period>& timeout = std::chrono::milliseconds( 1000 ) ) { m_timeout = timeout; }
-  virtual ~IClientConnector() noexcept                              = default;
+  template<class Rep = double, class Period = std::milli> CXX_JSONRPC_API void setTimeout( const std::chrono::duration<Rep, Period>& timeout = std::chrono::milliseconds( 1000 ) ) { m_timeout = timeout; }
+  CXX_JSONRPC_API virtual ~IClientConnector() noexcept                              = default;
   // Unified Send method
-  virtual std::string SendRequest( const std::string_view request ) = 0;
+  CXX_JSONRPC_API virtual std::string SendRequest( const std::string_view request ) = 0;
 
 protected:
-  explicit IClientConnector() noexcept = default;
+  CXX_JSONRPC_API explicit IClientConnector() noexcept = default;
   std::chrono::duration<double, std::micro> m_timeout{ std::chrono::milliseconds( 1000 ) };
 };
 
 class ISyncClientConnector : public IClientConnector
 {
 public:
-  explicit ISyncClientConnector() noexcept = default;
-  virtual ~ISyncClientConnector() noexcept = default;
-  std::string SendRequest( const std::string_view request ) override final
+  CXX_JSONRPC_API explicit ISyncClientConnector() noexcept = default;
+  CXX_JSONRPC_API virtual ~ISyncClientConnector() noexcept = default;
+  CXX_JSONRPC_API std::string SendRequest( const std::string_view request ) override final
   {
     auto fut = std::async( std::launch::async, [this, request]() { return SendAndReceive( request ); } );
     if( fut.wait_for( m_timeout ) == std::future_status::ready ) return fut.get();
@@ -60,15 +61,15 @@ public:
   }
 
 protected:
-  virtual std::string SendAndReceive( const std::string_view request ) = 0;
+  CXX_JSONRPC_API virtual std::string SendAndReceive( const std::string_view request ) = 0;
 };
 
 class IAsyncClientConnector : public IClientConnector
 {
 public:
-  explicit IAsyncClientConnector() noexcept = default;
-  virtual ~IAsyncClientConnector() noexcept = default;
-  std::string SendRequest( const std::string_view request ) override final
+  CXX_JSONRPC_API explicit IAsyncClientConnector() noexcept = default;
+  CXX_JSONRPC_API virtual ~IAsyncClientConnector() noexcept = default;
+  CXX_JSONRPC_API std::string SendRequest( const std::string_view request ) override final
   {
     nlohmann::json j = nlohmann::json::parse( request );
     // Prepare promise/future for async
@@ -119,8 +120,8 @@ public:
   }
 
 protected:
-  virtual void Send( const std::string_view request ) = 0;
-  void         Receive( const std::string_view response )
+  CXX_JSONRPC_API virtual void Send( const std::string_view request ) = 0;
+  CXX_JSONRPC_API void         Receive( const std::string_view response )
   {
     nlohmann::json j = nlohmann::json::parse( response );
     id_t           id{ 0 };

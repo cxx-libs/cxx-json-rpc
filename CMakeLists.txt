@@ -34,6 +34,7 @@ set(CXX_JSONRPC_PUBLIC_HEADERS
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/client.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/dispatcher.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/error_code.hpp"
+"${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/export.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/exception.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/iclientconnector.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/server.hpp"

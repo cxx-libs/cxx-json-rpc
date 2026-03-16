@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cxx/jsonrpc/dispatcher.hpp"
+#include "cxx/jsonrpc/export.hpp"
 
 #include <initializer_list>
 #include <string>
@@ -15,13 +16,13 @@ public:
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  explicit JsonRpcServer() = default;
+  CXX_JSONRPC_API explicit JsonRpcServer() = default;
 #if !defined( _WIN32 )
   #pragma GCC diagnostic pop
 #endif
-  ~JsonRpcServer() noexcept = default;
+  CXX_JSONRPC_API ~JsonRpcServer() noexcept = default;
 
-  bool Add( const std::string& name, Method callback, const std::initializer_list<std::string>& mapping = {} )
+  CXX_JSONRPC_API bool Add( const std::string& name, Method callback, const std::initializer_list<std::string>& mapping = {} )
   {
     if( name.rfind( "rpc.", 0 ) == 0 ) return false;
     if( mapping.size() == 0 ) return m_dispatcher.Add( name, std::move( callback ), std::nullopt );
@@ -29,7 +30,7 @@ public:
       return m_dispatcher.Add( name, std::move( callback ), mapping );
   }
 
-  bool Add( const std::string& name, Notification callback, const std::initializer_list<std::string>& mapping = {} )
+  CXX_JSONRPC_API bool Add( const std::string& name, Notification callback, const std::initializer_list<std::string>& mapping = {} )
   {
     if( name.rfind( "rpc.", 0 ) == 0 ) return false;
     if( mapping.size() == 0 ) return m_dispatcher.Add( name, std::move( callback ), std::nullopt );
@@ -37,13 +38,13 @@ public:
       return m_dispatcher.Add( name, std::move( callback ), mapping );
   }
 
-  nlohmann::json getMethodList() const { return m_dispatcher.listMethods(); }
+  CXX_JSONRPC_API nlohmann::json getMethodList() const { return m_dispatcher.listMethods(); }
 
-  nlohmann::json getNotificationList() const { return m_dispatcher.listNotifications(); }
+  CXX_JSONRPC_API nlohmann::json getNotificationList() const { return m_dispatcher.listNotifications(); }
 
-  nlohmann::json getProcedures() { return m_dispatcher.listProcedures(); }
+  CXX_JSONRPC_API nlohmann::json getProcedures() { return m_dispatcher.listProcedures(); }
 
-  std::string HandleRequest( const std::string& requestString )
+  CXX_JSONRPC_API std::string HandleRequest( const std::string& requestString )
   {
     try
     {
