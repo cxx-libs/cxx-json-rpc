@@ -108,7 +108,7 @@ TEST_CASE_FIXTURE(Server, "invocations") {
   REQUIRE(server.Add("div_function", GetHandle(&TestServer::div_function, t), {"a", "b"}));
   REQUIRE(server.Add("some_procedure", GetHandle(&TestServer::some_procedure, t), {"param"}));
   REQUIRE(server.Add("add_products", GetHandle(&TestServer::add_products, t), {"products"}));
-  REQUIRE(server.Add("dirty_notification", GetHandle(&TestServer::dirty_notification, t), {"products"}));
+  REQUIRE(server.Add("dirty_notification", GetHandle(&TestServer::dirty_notification, t)));
   REQUIRE(server.Add("dirty_method", GetHandle(&TestServer::dirty_method, t), {"a", "b"}));
   REQUIRE(server.Add("dirty_method2", GetHandle(&TestServer::dirty_method2, t), {"a", "b"}));
 

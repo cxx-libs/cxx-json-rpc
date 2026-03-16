@@ -9,8 +9,6 @@
 
 namespace jsonrpc
 {
-
-using NamedParamMapping = std::optional<std::vector<std::string>>;
   
 class Dispatcher
 {
@@ -25,7 +23,7 @@ public:
 #endif
   ~Dispatcher() noexcept = default;
 
-  bool Add(const std::string &name,Method callback, const NamedParamMapping &mapping)
+  bool Add(const std::string &name,Method callback, const std::optional<std::vector<std::string>> &mapping)
   {
     if(contains(name)) return false;
     if(mapping) callback.setParameterNames(mapping.value());
@@ -33,7 +31,7 @@ public:
     return true;
   }
 
-  bool Add(const std::string &name,Notification callback, const NamedParamMapping &mapping)
+  bool Add(const std::string &name,Notification callback, const std::optional<std::vector<std::string>> &mapping)
   {
     if(contains(name)) return false;
     if(mapping) callback.setParameterNames(mapping.value());

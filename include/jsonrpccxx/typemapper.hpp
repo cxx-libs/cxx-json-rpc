@@ -1,5 +1,6 @@
 #pragma once
 
+#include "error_code.hpp"
 #include "nlohmann/json.hpp"
 #include "jsonrpccxx/exception.hpp"
 
@@ -130,6 +131,7 @@ public:
     // Parameter helpers
     void setParameterNames(const std::vector<std::string>& names)
     {
+      if(arity()!=names.size()) throw exception(server_error, "Callback arity (" + std::to_string(arity()) +") does not match mapping size (" + std::to_string(names.size()) + ")");
         m_names = names;
         if (!m_names.empty()) m_isNamed = true;
 
