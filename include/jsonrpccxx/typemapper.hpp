@@ -192,7 +192,7 @@ private:
             nlohmann::json result;
             for (const auto& param : m_params) {
                 if (params.find(param.getName()) == params.end())
-                    throw exception(invalid_params, "invalid parameter: missing named parameter \"" + param.getName() + '"');
+                    throw exception(invalid_params, "invalid parameter: missing named parameter \"" + param.getName() + "\""); // FIXME crash using '
                 result.push_back(params[param.getName()]);
             }
             testParameters(params.size());
