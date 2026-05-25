@@ -15,8 +15,8 @@ public:
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  CXX_JSONRPC_API exception( int code, const std::string& message ) noexcept : m_code( code ), m_message( message ), m_err( std::to_string( code ) + ": " + message ) {}
-  CXX_JSONRPC_API exception( int code, const std::string& message, const std::string& data ) noexcept : m_code( code ), m_message( message ), m_data( data ), m_err( std::to_string( code ) + ": " + message + ", data: " + data ) {}
+  CXX_JSONRPC_API exception( const int code, const std::string& message ) noexcept : m_code( code ), m_message( message ), m_err( std::to_string( code ) + ": " + message ) {}
+  CXX_JSONRPC_API exception( const int code, const std::string& message, const std::string& data ) noexcept : m_code( code ), m_message( message ), m_data( data ), m_err( std::to_string( code ) + ": " + message + ", data: " + data ) {}
 #if !defined( _WIN32 )
   #pragma GCC diagnostic pop
 #endif

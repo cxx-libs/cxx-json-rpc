@@ -83,10 +83,8 @@ public:
     }
   }
 
-protected:
-  Dispatcher m_dispatcher;
-
 private:
+  Dispatcher     m_dispatcher;
   nlohmann::json HandleSingleRequest( nlohmann::json& request )
   {
     nlohmann::json id = nullptr;
@@ -111,7 +109,7 @@ private:
     }
   }
 
-  nlohmann::json ProcessSingleRequest( nlohmann::json& request )
+  nlohmann::json ProcessSingleRequest( nlohmann::json& request ) const
   {
     if( !request.contains( "jsonrpc" ) || !request["jsonrpc"].is_string() || request["jsonrpc"] != "2.0" ) throw exception( invalid_request, R"(invalid request: missing jsonrpc field set to "2.0")" );
     if( !request.contains( "method" ) || !request["method"].is_string() ) throw exception( invalid_request, "invalid request: method field must be a string" );

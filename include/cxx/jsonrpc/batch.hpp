@@ -26,15 +26,15 @@ static inline exception fromJson( const nlohmann::json& value )
   return exception( internal_error, R"(invalid error response: "code" (integer number) and "message" (string) are required)" );
 }
 
-typedef std::vector<nlohmann::json>           positional_parameter;
-typedef std::map<std::string, nlohmann::json> named_parameter;
+using positional_parameter = std::vector<nlohmann::json>;
+using named_parameter      = std::map<std::string, nlohmann::json>;
 
 class BatchRequest
 {
 public:
-  BatchRequest() : call( nlohmann::json::array() ) {}
+  CXX_JSONRPC_API BatchRequest() noexcept = default;
 
-  BatchRequest& AddMethodCall( const id_t& id, const std::string& name, const positional_parameter& params = {} )
+  CXX_JSONRPC_API BatchRequest& AddMethodCall( const id_t& id, const std::string& name, const positional_parameter& params = {} )
   {
     nlohmann::json request = { { "method", name }, { "params", params }, { "jsonrpc", "2.0" } };
     if( std::get_if<std::int64_t>( &id ) != nullptr ) request["id"] = std::get<std::int64_t>( id );
@@ -44,7 +44,7 @@ public:
     return *this;
   }
 
-  BatchRequest& AddNamedMethodCall( const id_t& id, const std::string& name, const named_parameter& params = {} )
+  CXX_JSONRPC_API BatchRequest& AddNamedMethodCall( const id_t& id, const std::string& name, const named_parameter& params = {} )
   {
     nlohmann::json request = { { "method", name }, { "params", params }, { "jsonrpc", "2.0" } };
     if( std::get_if<std::int64_t>( &id ) != nullptr ) request["id"] = std::get<std::int64_t>( id );
@@ -54,22 +54,22 @@ public:
     return *this;
   }
 
-  BatchRequest& AddNotificationCall( const std::string& name, const positional_parameter& params = {} )
+  CXX_JSONRPC_API BatchRequest& AddNotificationCall( const std::string& name, const positional_parameter& params = {} )
   {
     call.push_back( { { "method", name }, { "params", params }, { "jsonrpc", "2.0" } } );
     return *this;
   }
 
-  BatchRequest& AddNamedNotificationCall( const std::string& name, const named_parameter& params = {} )
+  CXX_JSONRPC_API BatchRequest& AddNamedNotificationCall( const std::string& name, const named_parameter& params = {} )
   {
     call.push_back( { { "method", name }, { "params", params }, { "jsonrpc", "2.0" } } );
     return *this;
   }
 
-  const nlohmann::json& Build() const { return call; }
+  CXX_JSONRPC_API const nlohmann::json& Build() const { return call; }
 
 private:
-  nlohmann::json call;
+  nlohmann::json call = nlohmann::json::array();
 };
 
 class BatchResponse
@@ -80,7 +80,7 @@ public:
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-  explicit BatchResponse( nlohmann::json&& response ) : response( std::move( response ) )
+  CXX_JSONRPC_API explicit BatchResponse( nlohmann::json&& response ) : response( std::move( response ) )
   {
     for( size_t i = 0; i < this->response.size(); ++i )
     {
@@ -137,17 +137,17 @@ public:
                                       id ) );
   }
 
-  bool HasErrors() const noexcept { return !errors.empty() || !nullIds.empty(); }
+  CXX_JSONRPC_API bool HasErrors() const noexcept { return !errors.empty() || !nullIds.empty(); }
 
-  const std::vector<std::size_t> GetInvalidIndexes() const noexcept { return nullIds; }
+  CXX_JSONRPC_API std::vector<std::size_t> GetInvalidIndexes() const noexcept { return nullIds; }
 
-  const nlohmann::json& GetResponse() const noexcept { return response; }
+  CXX_JSONRPC_API const nlohmann::json& GetResponse() const noexcept { return response; }
 
 private:
-  nlohmann::json                   response;
-  std::unordered_map<id_t, size_t> results;
-  std::unordered_map<id_t, size_t> errors;
-  std::vector<size_t>              nullIds;
+  nlohmann::json                        response;
+  std::unordered_map<id_t, std::size_t> results;
+  std::unordered_map<id_t, std::size_t> errors;
+  std::vector<size_t>                   nullIds;
 };
 
 }  // namespace jsonrpc

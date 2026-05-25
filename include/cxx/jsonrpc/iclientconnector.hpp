@@ -20,7 +20,7 @@ class IClientConnector
 {
 public:
   // General timeout setter (template)
-  template<class Rep = double, class Period = std::milli> void setTimeout( const std::chrono::duration<Rep, Period>& timeout = std::chrono::milliseconds( 1000 ) ) { m_timeout = timeout; }
+  template<class Rep = double, class Period = std::milli> void setTimeout( const std::chrono::duration<Rep, Period>& dur = std::chrono::milliseconds( 1000 ) ) { dur = timeout; }
   CXX_JSONRPC_API virtual ~IClientConnector() noexcept                              = default;
   // Unified Send method
   CXX_JSONRPC_API virtual std::string SendRequest( const std::string_view request ) = 0;
@@ -33,9 +33,9 @@ protected:
 class ISyncClientConnector : public IClientConnector
 {
 public:
-  CXX_JSONRPC_API explicit ISyncClientConnector() noexcept = default;
-  CXX_JSONRPC_API virtual ~ISyncClientConnector() noexcept = default;
-  CXX_JSONRPC_API std::string SendRequest( const std::string_view request ) override final
+  CXX_JSONRPC_API explicit ISyncClientConnector() noexcept  = default;
+  CXX_JSONRPC_API ~ISyncClientConnector() noexcept override = default;
+  CXX_JSONRPC_API std::string SendRequest( const std::string_view request ) final
   {
     auto fut = std::async( std::launch::async, [this, request]() { return SendAndReceive( request ); } );
     if( fut.wait_for( m_timeout ) == std::future_status::ready ) return fut.get();
@@ -67,10 +67,10 @@ protected:
 class IAsyncClientConnector : public IClientConnector
 {
 public:
-  explicit IAsyncClientConnector() noexcept = default;
-  virtual ~IAsyncClientConnector() noexcept = default;
+  explicit IAsyncClientConnector() noexcept  = default;
+  ~IAsyncClientConnector() noexcept override = default;
 
-  std::string SendRequest( const std::string_view request ) override final
+  CXX_JSONRPC_API std::string SendRequest( const std::string_view request ) final
   {
     nlohmann::json j = nlohmann::json::parse( request );
 
@@ -137,9 +137,9 @@ public:
   }
 
 protected:
-  virtual void Send( const std::string_view request ) = 0;
+  CXX_JSONRPC_API virtual void Send( const std::string_view request ) = 0;
 
-  void Receive( const std::string_view response )
+  CXX_JSONRPC_API void Receive( const std::string_view response )
   {
     try
     {

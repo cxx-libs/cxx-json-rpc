@@ -49,7 +49,7 @@ template<typename T> [[nodiscard]] constexpr auto cpp_type_name() noexcept
 }
 
 // -------------------- Type name mapping --------------------
-[[nodiscard]] constexpr std::string_view type_name( const nlohmann::json::value_t& t ) noexcept
+[[nodiscard]] CXX_JSONRPC_API constexpr std::string_view type_name( const nlohmann::json::value_t& t ) noexcept
 {
   switch( t )
   {
@@ -198,13 +198,13 @@ public:
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  Procedure( const Procedure& )            = delete;
-  Procedure& operator=( const Procedure& ) = delete;
-  Procedure( Procedure&& )                 = default;
-  Procedure& operator=( Procedure&& )      = default;
+  CXX_JSONRPC_API            Procedure( const Procedure& ) noexcept = delete;
+  CXX_JSONRPC_API Procedure& operator=( const Procedure& ) noexcept = delete;
+  CXX_JSONRPC_API            Procedure( Procedure&& ) noexcept      = default;
+  CXX_JSONRPC_API Procedure& operator=( Procedure&& ) noexcept      = default;
 
   // Constructor takes a callable and parameter descriptions
-  CXX_JSONRPC_API Procedure( const std::function<ReturnType( const nlohmann::json& )> f, const std::vector<param_t> params, const std::optional<std::string_view> description ) :
+  CXX_JSONRPC_API Procedure( const std::function<ReturnType( const nlohmann::json& )> f, std::vector<param_t> params, const std::optional<std::string_view> description ) :
     m_callable( std::move( f ) ), m_params( std::move( params ) ), m_description( description ? description.value() : std::string() )
   {
   }
@@ -286,7 +286,7 @@ using Method       = Procedure<nlohmann::json>;
 using Notification = Procedure<void>;
 
 // -------------------- Parameter type checking --------------------
-template<typename T> CXX_JSONRPC_API inline void check_param_type( const std::size_t index, const nlohmann::json& x, const nlohmann::json::value_t expectedType )
+template<typename T> inline void check_param_type( const std::size_t index, const nlohmann::json& x, const nlohmann::json::value_t expectedType )
 {
   if constexpr( std::is_arithmetic_v<T> )
   {

@@ -25,17 +25,6 @@ if(NOT TARGET nlohmann_json::nlohmann_json)
   endif()
 endif()
 
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_DEBUG}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "${CMAKE_CXX_FLAGS_DEBUG_INIT}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_DEBUG_INIT "${CMAKE_CXX_FLAGS_DEBUG_INIT}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAG_RELEASE_INIT "${CMAKE_CXX_FLAGS_RELEASE_INIT}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
-string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_MINSIZEREL_INIT "${CMAKE_CXX_FLAG_MINSIZEREL_INIT}")
-
 # Warning options for the compiler
 string(
         APPEND _warning_opts
@@ -50,6 +39,7 @@ target_include_directories(cxx-jsonrpc INTERFACE $<BUILD_INTERFACE:${PROJECT_SOU
 target_compile_features(cxx-jsonrpc INTERFACE cxx_std_17)
 target_compile_definitions(cxx-jsonrpc INTERFACE CXX_JSONRPC_EXPORT_DLL)
 target_link_libraries(cxx-jsonrpc INTERFACE nlohmann_json::nlohmann_json)
+
 set(CXX_JSONRPC_PUBLIC_HEADERS
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/batch.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/client.hpp"
@@ -62,7 +52,13 @@ set(CXX_JSONRPC_PUBLIC_HEADERS
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/server.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/typemapper.hpp"
 )
-set_target_properties(cxx-jsonrpc PROPERTIES PUBLIC_HEADER "${CXX_JSONRPC_PUBLIC_HEADERS}")
+set_target_properties(cxx-jsonrpc PROPERTIES
+                             PUBLIC_HEADER "${CXX_JSONRPC_PUBLIC_HEADERS}"
+                             CXX_EXTENSIONS FALSE
+                             CXX_STANDARD 17
+                             CXX_STANDARD_REQUIRED TRUE
+                             CXX_VISIBILITY_PRESET "hidden"
+                             VISIBILITY_INLINES_HIDDEN TRUE)
 add_library(cxx-jsonrpc::cxx-jsonrpc ALIAS cxx-jsonrpc)
 
 install(TARGETS cxx-jsonrpc nlohmann_json
