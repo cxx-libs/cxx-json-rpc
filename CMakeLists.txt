@@ -25,15 +25,6 @@ if(NOT TARGET nlohmann_json::nlohmann_json)
   endif()
 endif()
 
-if(NOT TARGET simdjson::simdjson)
-  find_package(simdjson QUIET)
-  if(CXX_JSONRPC_ALLOW_FETCHING)
-    include(FetchContent)
-    FetchContent_Declare(simdjson GIT_REPOSITORY https://github.com/simdjson/simdjson.git GIT_TAG v4.6.4  GIT_SHALLOW TRUE)
-    FetchContent_MakeAvailable(simdjson)
-  endif()
-endif()
-
 string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT}")
 string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_DEBUG}")
@@ -58,7 +49,7 @@ add_library(cxx-jsonrpc INTERFACE)
 target_include_directories(cxx-jsonrpc INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(cxx-jsonrpc INTERFACE cxx_std_17)
 target_compile_definitions(cxx-jsonrpc INTERFACE CXX_JSONRPC_EXPORT_DLL)
-target_link_libraries(cxx-jsonrpc INTERFACE nlohmann_json::nlohmann_json simdjson::simdjson)
+target_link_libraries(cxx-jsonrpc INTERFACE nlohmann_json::nlohmann_json)
 set(CXX_JSONRPC_PUBLIC_HEADERS
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/batch.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/client.hpp"
@@ -74,7 +65,7 @@ set(CXX_JSONRPC_PUBLIC_HEADERS
 set_target_properties(cxx-jsonrpc PROPERTIES PUBLIC_HEADER "${CXX_JSONRPC_PUBLIC_HEADERS}")
 add_library(cxx-jsonrpc::cxx-jsonrpc ALIAS cxx-jsonrpc)
 
-install(TARGETS cxx-jsonrpc nlohmann_json simdjson
+install(TARGETS cxx-jsonrpc nlohmann_json
         EXPORT cxx-jsonrpcTargets
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cxx/jsonrpc"
 )
