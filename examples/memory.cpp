@@ -70,7 +70,7 @@ void doWarehouseStuff( IClientConnector& clientConnector )
   }
 
   auto all = appClient.AllProducts();
-  for( const auto& p: all ) { cout << p.name << endl; }
+  for( const auto& _p: all ) { cout << _p.name << endl; }
 }
 
 int main()

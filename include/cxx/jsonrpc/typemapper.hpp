@@ -5,10 +5,12 @@
 #include "error_code.hpp"
 #include "nlohmann/json.hpp"
 
+#include <array>
 #include <cstddef>
 #include <deque>
 #include <functional>
 #include <limits>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -21,14 +23,7 @@
 #include <unordered_set>
 #include <utility>
 #include <variant>
-
-namespace std
-{
-// Forward declarations for STL containers
-template<typename T, typename Alloc> class vector;
-template<typename T, std::size_t N> class array;
-template<typename Key, typename T, typename Compare, typename Alloc> class map;
-}  // namespace std
+#include <vector>
 
 namespace jsonrpc
 {
@@ -176,8 +171,8 @@ public:
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  CXX_JSONRPC_API                                     param_t() = default;
-  template<typename T> static CXX_JSONRPC_API param_t from_type() { return param_t( cpp_type_name<T>(), type_mapper<std::decay_t<T>>::value ); }
+  CXX_JSONRPC_API                     param_t() = default;
+  template<typename T> static param_t from_type() { return param_t( cpp_type_name<T>(), type_mapper<std::decay_t<T>>::value ); }
 
 private:
   param_t( std::string_view cppType, nlohmann::json::value_t jt ) : cpp_type( cppType ), json_type( jt ) {}
@@ -323,7 +318,7 @@ template<typename T> CXX_JSONRPC_API inline void check_param_type( const std::si
 }
 
 // ================= Free function Methods =================
-template<typename ReturnType, typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API Method createMethod( std::function<ReturnType( ParamTypes... )> method, std::index_sequence<I...>, std::optional<std::string_view> m_description )
+template<typename ReturnType, typename... ParamTypes, std::size_t... I> Method createMethod( std::function<ReturnType( ParamTypes... )> method, std::index_sequence<I...>, std::optional<std::string_view> m_description )
 {
   std::vector<param_t> params = { param_t::from_type<ParamTypes>()... };
   return Method(
@@ -337,14 +332,14 @@ template<typename ReturnType, typename... ParamTypes, std::size_t... I> CXX_JSON
     std::move( params ), m_description );
 }
 
-template<typename ReturnType, typename... ParamTypes> CXX_JSONRPC_API Method GetHandle( std::function<ReturnType( ParamTypes... )> f, std::optional<std::string_view> m_description = std::nullopt )
+template<typename ReturnType, typename... ParamTypes> Method GetHandle( std::function<ReturnType( ParamTypes... )> f, std::optional<std::string_view> m_description = std::nullopt )
 { return createMethod( f, std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
-template<typename ReturnType, typename... ParamTypes> CXX_JSONRPC_API Method GetHandle( ReturnType ( *f )( ParamTypes... ), std::optional<std::string_view> m_description = std::nullopt )
+template<typename ReturnType, typename... ParamTypes> Method GetHandle( ReturnType ( *f )( ParamTypes... ), std::optional<std::string_view> m_description = std::nullopt )
 { return createMethod( std::function<ReturnType( ParamTypes... )>( f ), std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
 // ================= Member function Methods (non-const) =================
-template<typename T, typename ReturnType, typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API Method createMethod( ReturnType ( T::*method )( ParamTypes... ), T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
+template<typename T, typename ReturnType, typename... ParamTypes, std::size_t... I> Method createMethod( ReturnType ( T::*method )( ParamTypes... ), T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
 {
   std::vector<param_t> params = { param_t::from_type<ParamTypes>()... };
   return Method(
@@ -356,12 +351,11 @@ template<typename T, typename ReturnType, typename... ParamTypes, std::size_t...
     std::move( params ), m_description );
 }
 
-template<typename T, typename ReturnType, typename... ParamTypes> CXX_JSONRPC_API Method GetHandle( ReturnType ( T::*method )( ParamTypes... ), T& instance, std::optional<std::string_view> m_description = std::nullopt )
+template<typename T, typename ReturnType, typename... ParamTypes> Method GetHandle( ReturnType ( T::*method )( ParamTypes... ), T& instance, std::optional<std::string_view> m_description = std::nullopt )
 { return createMethod( method, instance, std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
 // ================= Member function Methods (const) =================
-template<typename T, typename ReturnType, typename... ParamTypes, std::size_t... I>
-CXX_JSONRPC_API Method createMethod( ReturnType ( T::*method )( ParamTypes... ) const, const T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
+template<typename T, typename ReturnType, typename... ParamTypes, std::size_t... I> Method createMethod( ReturnType ( T::*method )( ParamTypes... ) const, const T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
 {
   std::vector<param_t> params = { param_t::from_type<ParamTypes>()... };
   return Method(
@@ -373,11 +367,11 @@ CXX_JSONRPC_API Method createMethod( ReturnType ( T::*method )( ParamTypes... ) 
     std::move( params ), m_description );
 }
 
-template<typename T, typename ReturnType, typename... ParamTypes> CXX_JSONRPC_API Method GetHandle( ReturnType ( T::*method )( ParamTypes... ) const, const T& instance, std::optional<std::string> m_description = std::nullopt )
+template<typename T, typename ReturnType, typename... ParamTypes> Method GetHandle( ReturnType ( T::*method )( ParamTypes... ) const, const T& instance, std::optional<std::string> m_description = std::nullopt )
 { return createMethod( method, instance, std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
 // ================= Free function Notifications =================
-template<typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API Notification createNotification( std::function<void( ParamTypes... )> method, std::index_sequence<I...>, std::optional<std::string_view> m_description )
+template<typename... ParamTypes, std::size_t... I> Notification createNotification( std::function<void( ParamTypes... )> method, std::index_sequence<I...>, std::optional<std::string_view> m_description )
 {
   std::vector<param_t> params = { param_t::from_type<ParamTypes>()... };
   return Notification(
@@ -389,14 +383,13 @@ template<typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API Notification 
     std::move( params ), m_description );
 }
 
-template<typename... ParamTypes> CXX_JSONRPC_API Notification GetHandle( std::function<void( ParamTypes... )> f, std::optional<std::string_view> m_description = std::nullopt )
-{ return createNotification( f, std::index_sequence_for<ParamTypes...>{}, m_description ); }
+template<typename... ParamTypes> Notification GetHandle( std::function<void( ParamTypes... )> f, std::optional<std::string_view> m_description = std::nullopt ) { return createNotification( f, std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
-template<typename... ParamTypes> CXX_JSONRPC_API Notification GetHandle( void ( *f )( ParamTypes... ), std::optional<std::string_view> m_description = std::nullopt )
+template<typename... ParamTypes> Notification GetHandle( void ( *f )( ParamTypes... ), std::optional<std::string_view> m_description = std::nullopt )
 { return createNotification( std::function<void( ParamTypes... )>( f ), std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
 // ================= Member function Notifications (non-const) =================
-template<typename T, typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API Notification createNotification( void ( T::*method )( ParamTypes... ), T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
+template<typename T, typename... ParamTypes, std::size_t... I> Notification createNotification( void ( T::*method )( ParamTypes... ), T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
 {
   std::vector<param_t> params = { param_t::from_type<ParamTypes>()... };
   return Notification(
@@ -408,11 +401,11 @@ template<typename T, typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API N
     std::move( params ), m_description );
 }
 
-template<typename T, typename... ParamTypes> CXX_JSONRPC_API Notification GetHandle( void ( T::*method )( ParamTypes... ), T& instance, std::optional<std::string_view> m_description = std::nullopt )
+template<typename T, typename... ParamTypes> Notification GetHandle( void ( T::*method )( ParamTypes... ), T& instance, std::optional<std::string_view> m_description = std::nullopt )
 { return createNotification( method, instance, std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
 // ================= Member function Notifications (const) =================
-template<typename T, typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API Notification createNotification( void ( T::*method )( ParamTypes... ) const, const T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
+template<typename T, typename... ParamTypes, std::size_t... I> Notification createNotification( void ( T::*method )( ParamTypes... ) const, const T& instance, std::index_sequence<I...>, std::optional<std::string_view> m_description )
 {
   std::vector<param_t> params = { param_t::from_type<ParamTypes>()... };
   return Notification(
@@ -424,7 +417,7 @@ template<typename T, typename... ParamTypes, std::size_t... I> CXX_JSONRPC_API N
     std::move( params ), m_description );
 }
 
-template<typename T, typename... ParamTypes> CXX_JSONRPC_API Notification GetHandle( void ( T::*method )( ParamTypes... ) const, const T& instance, std::optional<std::string_view> m_description = std::nullopt )
+template<typename T, typename... ParamTypes> Notification GetHandle( void ( T::*method )( ParamTypes... ) const, const T& instance, std::optional<std::string_view> m_description = std::nullopt )
 { return createNotification( method, instance, std::index_sequence_for<ParamTypes...>{}, m_description ); }
 
 }  // namespace jsonrpc

@@ -93,11 +93,11 @@ public:
         nullIds.push_back( std::stoi( key ) );
         continue;
       }
-      if( value.contains( "result" ) ) results[id] = std::stoi( key );
+      if( value.contains( "result" ) ) results[id] = std::stoll( key );
       else if( value.contains( "error" ) )
-        errors[id] = std::stoi( key );
+        errors[id] = std::stoll( key );
       else
-        nullIds.push_back( std::stoi( key ) );
+        nullIds.push_back( std::stoll( key ) );
     }
   }
 #if !defined( _WIN32 )

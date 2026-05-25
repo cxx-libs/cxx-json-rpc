@@ -8,7 +8,7 @@
 namespace jsonrpc
 {
 
-class CXX_JSONRPC_API exception : public std::exception
+class exception : public std::exception
 {
 public:
 #if !defined( _WIN32 )

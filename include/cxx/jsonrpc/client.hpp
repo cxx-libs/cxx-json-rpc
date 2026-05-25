@@ -25,9 +25,9 @@ public:
   CXX_JSONRPC_API explicit JsonRpcClient() = delete;
   CXX_JSONRPC_API virtual ~JsonRpcClient() = default;
 
-  template<typename T = nlohmann::json> CXX_JSONRPC_API T CallMethod( const id_t& id, const std::string& name ) { return call_method( id, name, nlohmann::json::object() ).result.get<T>(); }
-  template<typename T = nlohmann::json> CXX_JSONRPC_API T CallMethod( const id_t& id, const std::string& name, const positional_parameter& params ) { return call_method( id, name, params ).result.get<T>(); }
-  template<typename T = nlohmann::json> CXX_JSONRPC_API T CallMethodNamed( const id_t& id, const std::string& name, const named_parameter& params = {} ) { return call_method( id, name, params ).result.get<T>(); }
+  template<typename T = nlohmann::json> T CallMethod( const id_t& id, const std::string& name ) { return call_method( id, name, nlohmann::json::object() ).result.get<T>(); }
+  template<typename T = nlohmann::json> T CallMethod( const id_t& id, const std::string& name, const positional_parameter& params ) { return call_method( id, name, params ).result.get<T>(); }
+  template<typename T = nlohmann::json> T CallMethodNamed( const id_t& id, const std::string& name, const named_parameter& params = {} ) { return call_method( id, name, params ).result.get<T>(); }
 
   CXX_JSONRPC_API void CallNotification( const std::string& name, const positional_parameter& params = {} ) { call_notification( name, params ); }
   CXX_JSONRPC_API void CallNotificationNamed( const std::string& name, const named_parameter& params = {} ) { call_notification( name, params ); }

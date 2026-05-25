@@ -12,10 +12,14 @@ using namespace jsonrpc;
 class TestClientConnector : public jsonrpc::ISyncClientConnector
 {
 public:
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
+#if !defined( _WIN32 )
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Weffc++"
+#endif
   explicit TestClientConnector() noexcept = default;
-#pragma GCC diagnostic push
+#if !defined( _WIN32 )
+  #pragma GCC diagnostic push
+#endif
   nlohmann::json request;
   std::string    raw_response;
 
