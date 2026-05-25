@@ -48,7 +48,7 @@ string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS_MINSIZEREL_INIT "${CMAKE_CXX_FLAG_MIN
 # Warning options for the compiler
 string(
         APPEND _warning_opts
-        "$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall;-Wextra;-Weffc++;-Werror;>"
+        "$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall;-Wextra;-Werror;>"
         "$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wthread-safety;-Wpedantic;>"
         "$<$<CXX_COMPILER_ID:GNU>:-pedantic;-pedantic-errors;>"
         "$<$<CXX_COMPILER_ID:MSVC>:/permissive-;/analyze>"
@@ -58,7 +58,6 @@ add_library(cxx-jsonrpc INTERFACE)
 target_include_directories(cxx-jsonrpc INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(cxx-jsonrpc INTERFACE cxx_std_17)
 target_compile_definitions(cxx-jsonrpc INTERFACE CXX_JSONRPC_EXPORT_DLL)
-target_compile_options(cxx-jsonrpc INTERFACE "${_warning_opts}")
 target_link_libraries(cxx-jsonrpc INTERFACE nlohmann_json::nlohmann_json simdjson::simdjson)
 set(CXX_JSONRPC_PUBLIC_HEADERS
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/batch.hpp"
@@ -68,6 +67,7 @@ set(CXX_JSONRPC_PUBLIC_HEADERS
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/export.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/exception.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/iclientconnector.hpp"
+"${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/id.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/server.hpp"
 "${PROJECT_SOURCE_DIR}/include/cxx/jsonrpc/typemapper.hpp"
 )

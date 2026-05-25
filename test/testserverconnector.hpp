@@ -34,8 +34,13 @@ public:
 
   nlohmann::json VerifyBatchResponse()
   {
+    // Notification-only batch => no response
+    if( raw_response.empty() ) return nullptr;
+
     nlohmann::json result = nlohmann::json::parse( raw_response );
+
     REQUIRE( result.is_array() );
+
     return result;
   }
 

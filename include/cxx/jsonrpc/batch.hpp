@@ -2,6 +2,7 @@
 
 #include "cxx/jsonrpc/exception.hpp"
 #include "cxx/jsonrpc/export.hpp"
+#include "cxx/jsonrpc/id.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -13,8 +14,6 @@
 
 namespace jsonrpc
 {
-
-using id_t = std::variant<std::int64_t, std::string>;
 
 static inline exception fromJson( const nlohmann::json& value )
 {
@@ -80,26 +79,31 @@ public:
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Weffc++"
 #endif
-  explicit BatchResponse( nlohmann::json&& response ) : response( response )
+
+  explicit BatchResponse( nlohmann::json&& response ) : response( std::move( response ) )
   {
-    for( auto& [key, value]: response.items() )
+    for( size_t i = 0; i < this->response.size(); ++i )
     {
+      auto& value = this->response[i];
+
       id_t id;
-      if( value.is_object() && value.contains( "id" ) && value["id"].is_number() ) id = value["id"].get<std::int64_t>();
-      else if( value.is_object() && value.contains( "id" ) && value["id"].is_string() )
-        id = value["id"].get<std::string>();
+
+      if( value.is_object() && value.contains( "id" ) && value["id"].is_number_integer() ) { id = value["id"].get<std::int64_t>(); }
+      else if( value.is_object() && value.contains( "id" ) && value["id"].is_string() ) { id = value["id"].get<std::string>(); }
       else
       {
-        nullIds.push_back( std::stoi( key ) );
+        nullIds.push_back( i );
         continue;
       }
-      if( value.contains( "result" ) ) results[id] = std::stoll( key );
+
+      if( value.contains( "result" ) ) results[id] = i;
       else if( value.contains( "error" ) )
-        errors[id] = std::stoll( key );
+        errors[id] = i;
       else
-        nullIds.push_back( std::stoll( key ) );
+        nullIds.push_back( i );
     }
   }
+
 #if !defined( _WIN32 )
   #pragma GCC diagnostic pop
 #endif
@@ -135,9 +139,9 @@ public:
 
   bool HasErrors() const noexcept { return !errors.empty() || !nullIds.empty(); }
 
-  const std::vector<size_t> GetInvalidIndexes() { return nullIds; }
+  const std::vector<std::size_t> GetInvalidIndexes() const noexcept { return nullIds; }
 
-  const nlohmann::json& GetResponse() { return response; }
+  const nlohmann::json& GetResponse() const noexcept { return response; }
 
 private:
   nlohmann::json                   response;

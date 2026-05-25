@@ -1,7 +1,9 @@
 #pragma once
 
 #include "cxx/jsonrpc/error_code.hpp"
+#include "cxx/jsonrpc/exception.hpp"
 #include "cxx/jsonrpc/export.hpp"
+#include "cxx/jsonrpc/id.hpp"
 
 #include <cstdint>
 #include <future>
@@ -13,8 +15,6 @@
 
 namespace jsonrpc
 {
-
-using id_t = std::variant<std::int64_t, std::string>;
 
 class IClientConnector
 {
@@ -67,77 +67,138 @@ protected:
 class IAsyncClientConnector : public IClientConnector
 {
 public:
-  CXX_JSONRPC_API explicit IAsyncClientConnector() noexcept = default;
-  CXX_JSONRPC_API virtual ~IAsyncClientConnector() noexcept = default;
-  CXX_JSONRPC_API std::string SendRequest( const std::string_view request ) override final
+  explicit IAsyncClientConnector() noexcept = default;
+  virtual ~IAsyncClientConnector() noexcept = default;
+
+  std::string SendRequest( const std::string_view request ) override final
   {
     nlohmann::json j = nlohmann::json::parse( request );
-    // Prepare promise/future for async
-    id_t           id{ 0 };
+
+    if( !j.is_object() ) throw exception( invalid_request, "async connector only supports single requests" );
+
     if( !j.contains( "id" ) )
     {
       Send( request );
       return "";
     }
+
+    id_t id;
+
     if( j["id"].is_string() ) id = j["id"].get<std::string>();
     else
       id = j["id"].get<std::int64_t>();
-    std::promise<std::string> prom;
-    auto                      fut = prom.get_future();
+
+    auto state = std::make_shared<promise_state>();
+
+    auto fut = state->promise.get_future().share();
+
     {
       std::lock_guard<std::mutex> lock( mtx_ );
-      promises_[id] = std::move( prom );
+      promises_[id] = state;
     }
+
     Send( request );
-    // Wait for response with m_timeout
+
     if( fut.wait_for( m_timeout ) == std::future_status::ready )
     {
-      std::string                 ret = fut.get();
-      std::lock_guard<std::mutex> lock( mtx_ );
-      promises_.erase( id );
-      return ret;
-    }
-    else
-    {
-      // Timeout occurred
+      std::string result = fut.get();
+
       {
         std::lock_guard<std::mutex> lock( mtx_ );
         promises_.erase( id );
       }
-      nlohmann::json error_json;
-      error_json["jsonrpc"]                     = "2.0";
-      error_json["error"]["code"]               = timeout;
-      error_json["error"]["message"]            = "timeout";
-      // Convert m_timeout to milliseconds for JSON
-      double timeout_ms                         = std::chrono::duration<double, std::milli>( m_timeout ).count();
-      error_json["error"]["data"]["timeout_ms"] = timeout_ms;
-      // Preserve the request id
-      if( j["id"].is_null() ) error_json["id"] = nullptr;
-      else
-        error_json["id"] = j["id"];
-      return error_json.dump();
-    }
-  }
 
-protected:
-  CXX_JSONRPC_API virtual void Send( const std::string_view request ) = 0;
-  CXX_JSONRPC_API void         Receive( const std::string_view response )
-  {
-    nlohmann::json j = nlohmann::json::parse( response );
-    id_t           id{ 0 };
-    if( j["id"].is_string() ) id = j["id"].get<std::string>();
-    else
-      id = j["id"].get<std::int64_t>();
+      return result;
+    }
+
+    // timeout
     {
       std::lock_guard<std::mutex> lock( mtx_ );
       auto                        it = promises_.find( id );
-      if( it != promises_.end() ) it->second.set_value( std::string( response ) );
+
+      if( it != promises_.end() )
+      {
+        it->second->expired = true;
+        promises_.erase( it );
+      }
+    }
+
+    nlohmann::json error_json;
+    error_json["jsonrpc"]          = "2.0";
+    error_json["error"]["code"]    = timeout;
+    error_json["error"]["message"] = "timeout";
+
+    double timeout_ms = std::chrono::duration<double, std::milli>( m_timeout ).count();
+
+    error_json["error"]["data"]["timeout_ms"] = timeout_ms;
+    error_json["id"]                          = j["id"];
+
+    return error_json.dump();
+  }
+
+protected:
+  virtual void Send( const std::string_view request ) = 0;
+
+  void Receive( const std::string_view response )
+  {
+    try
+    {
+      nlohmann::json j = nlohmann::json::parse( response );
+
+      if( !j.is_object() || !j.contains( "id" ) ) return;
+
+      id_t id;
+
+      if( j["id"].is_string() ) id = j["id"].get<std::string>();
+      else if( j["id"].is_number_integer() )
+        id = j["id"].get<std::int64_t>();
+      else
+        return;
+
+      std::shared_ptr<promise_state> state;
+
+      {
+        std::lock_guard<std::mutex> lock( mtx_ );
+
+        auto it = promises_.find( id );
+
+        if( it == promises_.end() ) return;
+
+        state = it->second;
+      }
+
+      if( state->expired.load() ) return;
+
+      bool expected = false;
+
+      if( !state->completed.compare_exchange_strong( expected, true ) ) return;
+
+      try
+      {
+        state->promise.set_value( std::string( response ) );
+      }
+      catch( const std::future_error& )
+      {
+        // already satisfied/cancelled
+      }
+    }
+    catch( const nlohmann::json::exception& )
+    {
+      // malformed transport payload
     }
   }
 
 private:
-  std::mutex                                          mtx_;
-  std::unordered_map<id_t, std::promise<std::string>> promises_;
+  struct promise_state
+  {
+    std::promise<std::string> promise;
+    std::atomic<bool>         completed{ false };
+    std::atomic<bool>         expired{ false };
+  };
+
+  std::mutex mtx_;
+
+  std::unordered_map<id_t, std::shared_ptr<promise_state>, id_hash> promises_;
 };
 
 }  // namespace jsonrpc

@@ -52,12 +52,19 @@ public:
 
       if( request.is_array() )
       {
+        if( request.empty() )
+        {
+          nlohmann::json json{ { "jsonrpc", "2.0" }, { "id", nullptr }, { "error", { { "code", invalid_request }, { "message", "invalid request: empty batch" } } } };
+          return json.dump();
+        }
         nlohmann::json result = nlohmann::json::array();
         for( nlohmann::json& r: request )
         {
           nlohmann::json res = this->HandleSingleRequest( r );
           if( !res.is_null() ) result.push_back( std::move( res ) );
         }
+
+        if( result.empty() ) return {};
         return result.dump();
       }
       else if( request.is_object() )
@@ -83,7 +90,7 @@ private:
   nlohmann::json HandleSingleRequest( nlohmann::json& request )
   {
     nlohmann::json id = nullptr;
-    if( request.contains( "id" ) && ( request["id"].is_number() || request["id"].is_string() || request["id"].is_null() ) ) { id = request["id"]; }
+    if( request.contains( "id" ) && ( request["id"].is_number_integer() || request["id"].is_string() || request["id"].is_null() ) ) { id = request["id"]; }
     try
     {
       return ProcessSingleRequest( request );
@@ -108,7 +115,8 @@ private:
   {
     if( !request.contains( "jsonrpc" ) || !request["jsonrpc"].is_string() || request["jsonrpc"] != "2.0" ) throw exception( invalid_request, R"(invalid request: missing jsonrpc field set to "2.0")" );
     if( !request.contains( "method" ) || !request["method"].is_string() ) throw exception( invalid_request, "invalid request: method field must be a string" );
-    if( request.contains( "id" ) && !( request.contains( "id" ) && ( request["id"].is_number() || request["id"].is_string() || request["id"].is_null() ) ) ) throw exception( invalid_request, "invalid request: id field must be a number, string or null" );
+    if( request.contains( "id" ) && !( request.contains( "id" ) && ( request["id"].is_number_integer() || request["id"].is_string() || request["id"].is_null() ) ) )
+      throw exception( invalid_request, "invalid request: id field must be a number, string or null" );
     if( request.contains( "params" ) && !( request["params"].is_array() || request["params"].is_object() || request["params"].is_null() ) ) throw exception( invalid_request, "invalid request: params field must be an array, object or null" );
     if( !request.contains( "params" ) || request["params"].is_null() ) request["params"] = nlohmann::json::array();
     if( !request.contains( "id" ) )

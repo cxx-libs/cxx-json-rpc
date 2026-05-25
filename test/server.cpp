@@ -192,6 +192,5 @@ TEST_CASE_FIXTURE( Server, "batch" )
   TestServerConnector::VerifyMethodError( -32600, R"(invalid request)", nullptr, batchresponse[3] );
 
   connector.SendRawRequest( "[]" );
-  batchresponse = connector.VerifyBatchResponse();
-  REQUIRE( batchresponse.empty() );
+  connector.VerifyMethodError( -32600, "invalid request", nullptr );
 }

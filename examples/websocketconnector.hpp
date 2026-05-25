@@ -46,6 +46,7 @@ public:
     m_server.setOnClientMessageCallback(
       [this]( std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket& webSocket, const ix::WebSocketMessagePtr& msg )
       {
+        (void)connectionState;
         if( msg->type == ix::WebSocketMessageType::Open ) { std::cout << "New connection" << std::endl; }
         else if( msg->type == ix::WebSocketMessageType::Message )
         {
