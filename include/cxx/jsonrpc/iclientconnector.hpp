@@ -20,7 +20,7 @@ class IClientConnector
 {
 public:
   // General timeout setter (template)
-  template<class Rep = double, class Period = std::milli> void setTimeout( const std::chrono::duration<Rep, Period>& dur = std::chrono::milliseconds( 1000 ) ) { dur = timeout; }
+  template<class Rep = double, class Period = std::milli> void setTimeout( const std::chrono::duration<Rep, Period>& dur = std::chrono::milliseconds( 1000 ) ) { m_timeout = dur; }
   CXX_JSONRPC_API virtual ~IClientConnector() noexcept                              = default;
   // Unified Send method
   CXX_JSONRPC_API virtual std::string SendRequest( const std::string_view request ) = 0;
